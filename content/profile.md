@@ -1,10 +1,10 @@
 # Profile
 
 ## Summary
-Gavin Whitlock is a Solution Engineer based in Austin, Texas, with 10+ years in enterprise SaaS. He is currently a Solution Engineer at DevRev (May 2026 to present). Before that he was an AI Solution Architect and Advisory Solution Consultant at ServiceNow, focused on financial services and wealth management accounts, and a Sales Engineer and Customer Success Manager at LogicMonitor. He started his career in healthcare IT implementation and support at athenahealth, Houston Methodist and Privia Health.
+Gavin Whitlock is a Solutions Engineer based in Austin, Texas, with 10+ years in enterprise SaaS. He is currently a Solutions Engineer at DevRev (May 2026 to present). Before that he was an AI Solution Architect and Advisory Solution Consultant at ServiceNow, focused on financial services and wealth management accounts, and a Sales Engineer and Customer Success Manager at LogicMonitor. He started his career in healthcare IT implementation and support at athenahealth, Houston Methodist and Privia Health.
 
 ## What he does well
-Gavin runs technical discovery, demos and architecture workshops for strategic and enterprise accounts, and builds POC environments and prototypes, increasingly with AI agents and LLM integrations. He has carried a quota as an SE (135% in 2024 at ServiceNow) and has also owned renewals and expansion as a CSM (100% net revenue retention, zero churn at LogicMonitor), so he understands the full customer lifecycle, not only the pre-sale.
+Gavin runs technical discovery, demos and architecture workshops for strategic and enterprise accounts, and builds POC environments and prototypes, increasingly with AI agents and LLM integrations. He has carried a quota as an SE (135% in 2024 and 112% in 2025 at ServiceNow, managing the territory on his own for half of 2025) and has also owned renewals and expansion as a CSM (100% net revenue retention, zero churn at LogicMonitor), so he understands the full customer lifecycle, not only the pre-sale.
 
 ## What he is looking for
 <!-- TODO(Gavin): confirm or edit this section. The assistant will repeat it to recruiters. -->

@@ -19,7 +19,7 @@ export const profile = {
   location: "Austin, TX",
   headline: "A technical storyteller who ties the technology back to business outcomes.",
   intro:
-    "I'm Gavin, an Austin-based solution engineer with 10+ years in enterprise SaaS at DevRev, ServiceNow and LogicMonitor. I lead discovery and architecture workshops, then build POCs with AI agents and LLM integrations. I built the assistant on this page with LangChain.js and Kimi K3, an open-weight model.",
+    "I'm Gavin, an Austin-based solutions engineer with 10+ years in enterprise SaaS at DevRev, ServiceNow and LogicMonitor. I lead discovery and architecture workshops, then build POCs with AI agents and LLM integrations. I built the assistant on this page with LangChain.js and Kimi K3, an open-weight model.",
   status: "Open to Solutions Engineering roles",
   links: {
     linkedin: "https://www.linkedin.com/in/gavin-whitlock",
@@ -37,7 +37,7 @@ export const profile = {
 export const experience: Role[] = [
   {
     company: "DevRev",
-    title: "Solution Engineer",
+    title: "Solutions Engineer",
     start: "May 2026",
     end: "Present",
     bullets: [
@@ -70,7 +70,7 @@ export const experience: Role[] = [
       "Led technical sales cycles for enterprise financial services organizations from discovery through technical win.",
       "Delivered demos and architecture workshops across ITOM, ITSM, SPM and Enterprise Architecture.",
       "Built and presented cloud-native operations labs using AWS EKS and EC2.",
-      "Quota attainment: 135% (2024), 101% (2023), 87% (2022 ramp year).",
+      "Quota attainment: 112% (2025, managing the territory on my own for half the year), 135% (2024), 101% (2023), 87% (2022 ramp year).",
     ],
   },
   {
