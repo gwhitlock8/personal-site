@@ -33,7 +33,7 @@ export default function Home() {
                 {profile.status}
               </p>
             </div>
-            <h1 className="text-[2.35rem] font-semibold leading-[1.06] tracking-[-0.025em] sm:text-[3rem] lg:text-[3.15rem]">
+            <h1 className="max-w-[34rem] text-[1.85rem] font-semibold leading-[1.15] tracking-[-0.02em] sm:text-[2.25rem] lg:text-[2.4rem]">
               {profile.headline}
             </h1>
             <p className="mt-6 max-w-[34rem] text-[1.075rem] leading-relaxed text-slate">{profile.intro}</p>
