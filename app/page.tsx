@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import Chat from "@/components/Chat";
 import { experience, profile, references, type Role } from "@/lib/profile";
@@ -18,10 +19,20 @@ export default function Home() {
         <section className="relative grid items-start gap-10 pb-20 pt-4 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:pt-10">
           <div className="blueprint pointer-events-none absolute -inset-x-8 -top-6 bottom-6 -z-10 [mask-image:radial-gradient(ellipse_at_30%_40%,black,transparent_70%)]" />
           <div className="lg:pt-8">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-cobalt/25 bg-card px-3 py-1 text-[13px] text-cobalt-deep">
-              <span className="h-1.5 w-1.5 rounded-full bg-cobalt" aria-hidden />
-              {profile.status}
-            </p>
+            <div className="mb-6 flex items-center gap-4">
+              <Image
+                src="/headshot.jpg"
+                alt={`Photo of ${profile.name}`}
+                width={72}
+                height={72}
+                priority
+                className="h-[72px] w-[72px] shrink-0 rounded-full border border-ink/10 object-cover shadow-[0_8px_20px_-12px_rgba(23,32,43,0.5)]"
+              />
+              <p className="inline-flex items-center gap-2 rounded-full border border-cobalt/25 bg-card px-3 py-1 text-[13px] text-cobalt-deep">
+                <span className="h-1.5 w-1.5 rounded-full bg-cobalt" aria-hidden />
+                {profile.status}
+              </p>
+            </div>
             <h1 className="text-[2.35rem] font-semibold leading-[1.06] tracking-[-0.025em] sm:text-[3rem] lg:text-[3.15rem]">
               {profile.headline}
             </h1>

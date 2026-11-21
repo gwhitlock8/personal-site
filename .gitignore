@@ -10,3 +10,5 @@ next-env.d.ts
 
 # original upload; the site serves public/Gavin-Whitlock-Resume.pdf
 /Gavin Whitlock - Resume.pdf
+/gavin_headshot.jpg
+.circle-preview.png

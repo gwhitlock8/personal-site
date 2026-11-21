@@ -9,6 +9,7 @@ const schibsted = Schibsted_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.gavinwhitlock.com"),
   title: "Gavin Whitlock, Solution Engineer",
   description:
     "Austin-based solution engineer with 10+ years in enterprise SaaS. Ask my AI assistant, built with LangChain.js and the open-weight Kimi K3 model.",
@@ -16,6 +17,14 @@ export const metadata: Metadata = {
     title: "Gavin Whitlock, Solution Engineer",
     description: "Ask my AI assistant about my experience and fit for your role.",
     type: "website",
+    url: "/",
+    images: [{ url: "/headshot.jpg", width: 512, height: 512, alt: "Gavin Whitlock" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "Gavin Whitlock, Solution Engineer",
+    description: "Ask my AI assistant about my experience and fit for your role.",
+    images: ["/headshot.jpg"],
   },
 };
 
