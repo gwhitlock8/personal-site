@@ -126,7 +126,9 @@ export default function Chat() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "The fit check failed.");
-      patchLast({ content: "", fit: data.fit, sources: data.sources, pending: false });
+      // Keep the summary as text so later chat turns have context (and the
+      // model never receives an empty assistant message). The card renders from `fit`.
+      patchLast({ content: `Fit check: ${data.fit.summary}`, fit: data.fit, sources: data.sources, pending: false });
     } catch (err) {
       patchLast({ content: (err as Error).message, error: true, pending: false });
     } finally {

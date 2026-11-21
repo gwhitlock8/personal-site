@@ -15,13 +15,23 @@ const STOPWORDS = new Set(
   ),
 );
 
+// Light stemming so plurals match singulars ("prototypes" finds "prototype").
+// Applied to both questions and documents, so it only has to be consistent.
+export function stem(t: string): string {
+  if (/[0-9$%]/.test(t)) return t;
+  if (t.length > 4 && t.endsWith("ies")) return t.slice(0, -3) + "y";
+  if (t.length > 3 && t.endsWith("s") && !/(ss|us|is)$/.test(t)) return t.slice(0, -1);
+  return t;
+}
+
 export function tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9$%+.\s-]/g, " ")
     .split(/\s+/)
     .map((t) => t.replace(/^[.-]+|[.-]+$/g, ""))
-    .filter((t) => t.length > 1 && !STOPWORDS.has(t));
+    .filter((t) => t.length > 1 && !STOPWORDS.has(t))
+    .map(stem);
 }
 
 export interface BM25RetrieverInput extends BaseRetrieverInput {

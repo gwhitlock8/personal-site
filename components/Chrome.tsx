@@ -37,7 +37,7 @@ export function Footer() {
       </p>
       <p>
         Built with Next.js, LangChain.js and Kimi K3.{" "}
-        <a href={profile.links.github} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+        <a href={`${profile.links.github}/personal-site`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
           Code on GitHub
         </a>
       </p>

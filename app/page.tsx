@@ -19,16 +19,16 @@ export default function Home() {
         <section className="relative grid items-start gap-10 pb-20 pt-4 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:pt-10">
           <div className="blueprint pointer-events-none absolute -inset-x-8 -top-6 bottom-6 -z-10 [mask-image:radial-gradient(ellipse_at_30%_40%,black,transparent_70%)]" />
           <div className="lg:pt-8">
-            <div className="mb-6 flex items-center gap-4">
+            <div className="mb-6 flex items-center gap-3 sm:gap-4">
               <Image
                 src="/headshot.jpg"
                 alt={`Photo of ${profile.name}`}
                 width={72}
                 height={72}
                 priority
-                className="h-[72px] w-[72px] shrink-0 rounded-full border border-ink/10 object-cover shadow-[0_8px_20px_-12px_rgba(23,32,43,0.5)]"
+                className="h-14 w-14 shrink-0 rounded-full sm:h-[72px] sm:w-[72px] border border-ink/10 object-cover shadow-[0_8px_20px_-12px_rgba(23,32,43,0.5)]"
               />
-              <p className="inline-flex items-center gap-2 rounded-full border border-cobalt/25 bg-card px-3 py-1 text-[13px] text-cobalt-deep">
+              <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-cobalt/25 bg-card px-3 py-1 text-[12px] text-cobalt-deep sm:text-[13px]">
                 <span className="h-1.5 w-1.5 rounded-full bg-cobalt" aria-hidden />
                 {profile.status}
               </p>
@@ -46,7 +46,7 @@ export default function Home() {
 
             <dl className="mt-10 grid max-w-[34rem] grid-cols-2 gap-x-8 border-t border-ink/15">
               {profile.facts.map((f) => (
-                <div key={f.label} className="flex flex-col-reverse border-b border-line py-4">
+                <div key={f.label} className="flex flex-col-reverse justify-end border-b border-line py-4">
                   <dt className="mt-0.5 text-[13px] leading-snug text-slate">{f.label}</dt>
                   <dd className="text-2xl font-semibold tracking-tight">{f.value}</dd>
                 </div>

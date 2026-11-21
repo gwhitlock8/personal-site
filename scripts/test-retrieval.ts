@@ -21,6 +21,8 @@ const cases: [string, string][] = [
   ["Why no embeddings or vector database?", "this-site"],
   ["Has he worked on payments?", "skills"],
   ["customer success renewals churn", "experience"],
+  ["What AI prototypes has Gavin built for customers?", "career-notes/An AI prototype"],
+  ["Has he deployed to GCP with Terraform?", "career-notes/Getting ServiceNow to deploy into GCP"],
 ];
 for (const [q, expected] of cases) {
   const top = await retriever.invoke(q);

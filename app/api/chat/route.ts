@@ -25,6 +25,8 @@ export async function POST(req: Request) {
 
   const messages = (input.messages ?? [])
     .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+    // Moonshot rejects empty messages, so drop them (e.g. an interrupted reply).
+    .filter((m) => m.content.trim().length > 0)
     .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_CHARS) }));
   const last = messages.at(-1);
   if (!last || last.role !== "user" || !last.content.trim()) {
