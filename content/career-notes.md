@@ -12,8 +12,17 @@ At DevRev, Gavin built an AI prototype (a POC) for a fractional CFO firm that wa
 ## Getting ServiceNow to deploy into GCP for a bank
 ServiceNow's cloud management in ITOM deployed through Terraform to AWS and Azure, but not GCP. A large bank Gavin supported ran its entire cloud footprint on GCP. Working with the bank's engineers, he rewrote the Terraform templates and connected the right API endpoints so the bank could run GCP deployments from ServiceNow's cloud management platform.
 
-## A prototype tool that builds customer demos from discovery notes
-Gavin built an internal prototype tool that sets up a tailored demo from a prospect's company, industry and discovery-call notes. Building the tool took about a week. Before it, each custom demo took a couple of hours to put together by hand.
+## A demo builder tool for DevRev's AI context layer
+At DevRev, Gavin built a prospect-agnostic demo builder in about a week. It generates a demo narrative along with synthetic data shaped like the data in third-party systems of record such as Jira, Salesforce and ServiceNow, plus some legacy platforms, to show the power of DevRev's AI context layer.
+
+## Selling AI to go-to-market teams with DevRev Grow
+At DevRev, Gavin also sold to go-to-market teams. DevRev is itself a CRM, and its sales product, Grow, could act as the system of record or sit on top of CRMs like Salesforce and HubSpot. Grow automated the routine work that weighs on sales teams. Calls recorded in Gong or Granola flowed in as meeting objects linked to the opportunity, so AI could build call plans and account plans from what was discussed on a discovery call or an SDR's outreach call, giving sellers real context before a conversation. It also automated CRM hygiene, a large administrative burden for most sales teams. Gavin built the Grow demos and POCs himself, including the Salesforce, HubSpot, Gong and Granola integrations. The fractional CFO deal was a Grow win: it covered CRM hygiene plus a proposal workflow that shortened the time from discovery call to proposal.
+
+## Enablement and training
+Enablement and training run through Gavin's career. At DevRev, he took part in several cycles of partner enablement, teaching partners the platform, its technical underpinnings and how to sell it. Early in his career, as an Implementation Associate at athenahealth, he trained support staff and providers on the athenahealth platform, showing them how to use their time on it well and provide better care to patients.
+
+## Bringing customer feedback to Product
+Gavin has passed customer feedback to product teams throughout his career. In sales engineering, he brings back what he hears from prospects during the sales process. In customer success, post-sale, customers using the product found gaps whose fixes could help them and other customers, and he took those to the product team.
 
 ## Integrations with Microsoft Teams and Slack
 Gavin has built integrations with both Microsoft Teams and Slack, at ServiceNow and at DevRev. At ServiceNow, Microsoft Teams was the single entry point for the AI employee self-service POC he led for a large US credit card issuer.

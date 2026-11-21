@@ -29,6 +29,9 @@ const cases: [string, string][] = [
   ["Does he still code?", "career-notes/How he uses his coding skills now"],
   ["How does he run discovery calls?", "career-notes/How he runs discovery"],
   ["Does he use MEDDPICC or a demo methodology?", "career-notes/How he runs discovery"],
+  ["Has he sold to sales teams or worked with a CRM like Salesforce or HubSpot?", "career-notes/Selling AI to go-to-market teams"],
+  ["Has he done enablement or trained partners?", "career-notes/Enablement and training"],
+  ["Does he know Snowflake or BigQuery?", "skills/Data and GTM tools"],
 ];
 for (const [q, expected] of cases) {
   const top = await retriever.invoke(q);
