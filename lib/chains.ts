@@ -74,8 +74,12 @@ export const FitSchema = z.object({
 export type Fit = z.infer<typeof FitSchema>;
 
 export async function runFit(jd: string): Promise<{ fit: Fit; sources: Source[] }> {
-  const retriever = new BM25Retriever({ docs: await loadKnowledge(), k: 8 });
-  const docs = await retriever.invoke(jd);
+  // The whole knowledge base is small (~3K words), so the fit check reads all of it.
+  // Keyword retrieval alone missed relevant sections for long job descriptions and
+  // produced false "gaps". Sections are ordered by relevance; the top ones become the chips.
+  const all = await loadKnowledge();
+  const ranked = new BM25Retriever({ docs: all, k: all.length }).score(jd).map((r) => r.doc);
+  const docs = [...ranked, ...all.filter((d) => !ranked.includes(d))];
 
   // withStructuredOutput sends a JSON schema (response_format: json_schema)
   // generated from the Zod object, then parses and validates the reply.
@@ -90,5 +94,5 @@ export async function runFit(jd: string): Promise<{ fit: Fit; sources: Source[] 
     context: formatDocs(docs),
     jd,
   });
-  return { fit, sources: toSources(docs) };
+  return { fit, sources: toSources(ranked.slice(0, 6)) };
 }

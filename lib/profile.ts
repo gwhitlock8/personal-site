@@ -17,7 +17,7 @@ export const profile = {
   name: "Gavin Whitlock",
   initials: "GW",
   location: "Austin, TX",
-  headline: "I go deep on how a product works and keep the conversation tied to the business problem it solves.",
+  headline: "A technical storyteller who ties the technology back to business outcomes.",
   intro:
     "I'm Gavin, an Austin-based solution engineer with 10+ years in enterprise SaaS at DevRev, ServiceNow and LogicMonitor. I lead discovery and architecture workshops, then build POCs with AI agents and LLM integrations. I built the assistant on this page with LangChain.js and Kimi K3, an open-weight model.",
   status: "Open to Solutions Engineering roles",

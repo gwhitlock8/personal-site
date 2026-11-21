@@ -43,6 +43,7 @@ export const fitPrompt = ChatPromptTemplate.fromMessages([
     `You compare a job description with Gavin Whitlock's background for a hiring manager.
 Use only the profile and context below as evidence. Be honest: list real gaps, and don't stretch experience to fit.
 Each match must cite specific evidence (role, company, result). Keep each item to one sentence.
+Only list a gap when nothing in the profile or context covers that requirement; check every section before calling something missing.
 
 Profile:
 {profile}
