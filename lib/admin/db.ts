@@ -1,12 +1,16 @@
 import { Redis } from "@upstash/redis";
 
-// Storage for the admin area: a second Upstash database, separate from the
-// public chat logs. Connect it in Vercel with the env var prefix "ADMIN" so it
-// sets ADMIN_KV_REST_API_URL and ADMIN_KV_REST_API_TOKEN.
+// Storage for the admin area. By default it shares the site's existing Upstash
+// database (the one holding public chat logs), with every key prefixed
+// "admin:" so admin data never overlaps public data. The public code only
+// touches its own keys (chats, leads, rate limits).
+//
+// Optional: to move admin data to its own database later, connect one in Vercel
+// with the env var prefix "ADMIN" (ADMIN_KV_REST_API_URL / _TOKEN); it wins.
 //
 // For local testing only, ADMIN_STORE=memory keeps everything in process memory
-// (lost on restart). Without either, admin features refuse to run rather than
-// silently losing data.
+// (lost on restart). Without any of these, admin features refuse to run rather
+// than silently losing data.
 
 export interface AdminKV {
   get(key: string): Promise<string | null>;
@@ -24,7 +28,7 @@ export interface AdminKV {
 
 export class AdminStoreNotConfigured extends Error {
   constructor() {
-    super("The admin database isn't connected. Add a second Upstash database in Vercel with the ADMIN prefix.");
+    super("No database is connected. Connect Upstash for Redis in Vercel's Storage tab (the same one the public site uses).");
   }
 }
 
@@ -101,14 +105,37 @@ function memory(): AdminKV {
   };
 }
 
+/** Prefixes every key so admin data can share a database with the public site. */
+function prefixed(kv: AdminKV, prefix: string): AdminKV {
+  const p = (k: string) => prefix + k;
+  return {
+    get: (k) => kv.get(p(k)),
+    mget: (keys) => kv.mget(keys.map(p)),
+    set: (k, v, ttl) => kv.set(p(k), v, ttl),
+    del: (k) => kv.del(p(k)),
+    incr: (k, ttl) => kv.incr(p(k), ttl),
+    zadd: (k, score, member) => kv.zadd(p(k), score, member),
+    zrem: (k, member) => kv.zrem(p(k), member),
+    zrevAll: (k) => kv.zrevAll(p(k)),
+    lpush: (k, v) => kv.lpush(p(k), v),
+    lrange: (k) => kv.lrange(p(k)),
+  };
+}
+
+export const ADMIN_PREFIX = "admin:";
+
 let cached: AdminKV | null = null;
 
 export function adminDb(): AdminKV {
   if (cached) return cached;
-  const url = process.env.ADMIN_KV_REST_API_URL;
-  const token = process.env.ADMIN_KV_REST_API_TOKEN;
-  if (url && token) cached = upstash(url, token);
-  else if (process.env.ADMIN_STORE === "memory") cached = memory();
+  const url =
+    process.env.ADMIN_KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+  const token =
+    process.env.ADMIN_KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+  let base: AdminKV;
+  if (url && token) base = upstash(url, token);
+  else if (process.env.ADMIN_STORE === "memory") base = memory();
   else throw new AdminStoreNotConfigured();
+  cached = prefixed(base, ADMIN_PREFIX);
   return cached;
 }
