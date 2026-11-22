@@ -25,6 +25,8 @@ export const profile = {
     linkedin: "https://www.linkedin.com/in/gavin-whitlock",
     github: "https://github.com/gwhitlock8",
     resume: "/Gavin-Whitlock-Resume.pdf",
+    booking: "https://calendar.app.google/s6Fff722GhMxcrA8A",
+    email: "gavinswhitlock@gmail.com",
   },
   facts: [
     { value: "135%", label: "Quota attainment at ServiceNow, 2024" },

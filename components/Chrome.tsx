@@ -8,6 +8,9 @@ export function Header() {
         {profile.name}
       </Link>
       <nav className="flex items-center gap-5 text-sm text-slate">
+        <Link href="/#work" className="hidden hover:text-ink sm:inline">
+          Work
+        </Link>
         <Link href="/#experience" className="hidden hover:text-ink sm:inline">
           Experience
         </Link>

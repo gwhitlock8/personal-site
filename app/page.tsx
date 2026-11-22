@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Chat from "@/components/Chat";
 import { experience, profile, references, type Role } from "@/lib/profile";
+import { caseStudies } from "@/lib/case-studies";
 import { Header, Footer } from "@/components/Chrome";
 
 // Roles before this index are shown in full; the rest are condensed.
@@ -37,12 +38,28 @@ export default function Home() {
               {profile.headline}
             </h1>
             <p className="mt-6 max-w-[34rem] text-[1.075rem] leading-relaxed text-slate">{profile.intro}</p>
-            <a
-              href="#chat"
-              className="mt-6 inline-flex rounded-md bg-cobalt px-5 py-2.5 text-sm font-medium text-white hover:bg-cobalt-deep lg:hidden"
-            >
-              Ask the assistant
-            </a>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a
+                href={profile.links.booking}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md bg-cobalt px-5 py-2.5 text-sm font-medium text-white hover:bg-cobalt-deep"
+              >
+                Book 20 minutes
+              </a>
+              <a
+                href={`mailto:${profile.links.email}`}
+                className="rounded-md border border-ink/25 bg-card px-5 py-2.5 text-sm font-medium hover:border-ink"
+              >
+                Email me
+              </a>
+              <a
+                href="#chat"
+                className="rounded-md border border-ink/25 bg-card px-5 py-2.5 text-sm font-medium hover:border-ink lg:hidden"
+              >
+                Ask the assistant
+              </a>
+            </div>
 
             <dl className="mt-10 grid max-w-[34rem] grid-cols-2 gap-x-8 border-t border-ink/15">
               {profile.facts.map((f) => (
@@ -56,6 +73,27 @@ export default function Home() {
 
           <div id="chat" className="scroll-mt-6">
             <Chat />
+          </div>
+        </section>
+
+        <section id="work" className="scroll-mt-6 border-t border-ink/15 py-16">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-3xl font-semibold tracking-tight">Selected work</h2>
+            <p className="max-w-[30rem] text-[15px] text-slate">Prototypes and POCs I built for customers. Customer names are withheld.</p>
+          </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
+            {caseStudies.map((c) => (
+              <Link
+                key={c.slug}
+                href={c.href ?? `/work/${c.slug}`}
+                className="group flex flex-col rounded-[14px] border border-ink/15 bg-card p-6 transition-colors hover:border-cobalt"
+              >
+                <p className="text-[13px] text-slate">{c.context}</p>
+                <h3 className="mt-2 text-xl font-semibold leading-snug tracking-tight group-hover:text-cobalt-deep">{c.title}</h3>
+                <p className="mt-3 flex-1 text-[15px] leading-relaxed text-ink/80">{c.summary}</p>
+                <p className="mt-5 border-t border-line pt-4 text-[14px] font-medium text-cobalt-deep">{c.outcome}</p>
+              </Link>
+            ))}
           </div>
         </section>
 
@@ -114,12 +152,12 @@ export default function Home() {
               Read the walkthrough
             </Link>
             <a
-              href={profile.links.linkedin}
+              href={profile.links.booking}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-md border border-ink px-5 py-2.5 text-sm font-medium hover:bg-ink hover:text-paper"
             >
-              Connect on LinkedIn
+              Book 20 minutes
             </a>
           </div>
         </section>
