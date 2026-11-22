@@ -42,6 +42,10 @@ _Avoid_: Activity, update, touch
 A change to an Application's Stage or details that the assistant suggests from an Event and that only takes effect when Gavin approves it.
 _Avoid_: Suggestion, auto-update
 
+**Follow-up**:
+An Application or Opportunity that has gone too long without an Event, so Gavin should act on it.
+_Avoid_: Reminder, stale item, nudge
+
 **Watchlist**:
 The companies whose job boards are checked for new roles.
 _Avoid_: Target list, company list

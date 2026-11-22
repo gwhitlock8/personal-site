@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/chat": ["./content/**/*"],
     "/api/fit": ["./content/**/*"],
+    // Server actions on admin pages run the Fit Check, which reads /content.
+    "/admin/**": ["./content/**/*"],
+  },
+  // Keep the admin area out of search engines.
+  async headers() {
+    return [{ source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }];
   },
 };
 
