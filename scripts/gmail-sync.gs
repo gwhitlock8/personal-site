@@ -18,6 +18,8 @@
  *        SITE_URL       = https://www.gavinwhitlock.com   (optional; this is the default)
  *   3. Run testConnection once (approve the Gmail permissions it asks for).
  *   4. Run installTrigger once. Done; it now runs every 15 minutes.
+ *   5. Run installDigestTrigger once for the weekday-morning Digest (7:30 a.m. Central).
+ *      previewDigest shows today's Digest in the log without sending it.
  *
  * The first runs work back to October 1, 2026, 50 messages per run, until caught up.
  * The site caps email classification per minute (ADMIN_MODEL_RPM) so the public
@@ -48,7 +50,7 @@ function siteUrl_() {
   return (props_().getProperty('SITE_URL') || 'https://www.gavinwhitlock.com').replace(/\/$/, '');
 }
 
-function request_(method, payload) {
+function request_(method, payload, path) {
   var secret = props_().getProperty('INGEST_SECRET');
   if (!secret) throw new Error('Add INGEST_SECRET in Project Settings > Script Properties.');
   var options = {
@@ -58,7 +60,7 @@ function request_(method, payload) {
     muteHttpExceptions: true
   };
   if (payload) options.payload = JSON.stringify(payload);
-  var res = UrlFetchApp.fetch(siteUrl_() + '/api/admin/ingest', options);
+  var res = UrlFetchApp.fetch(siteUrl_() + (path || '/api/admin/ingest'), options);
   var code = res.getResponseCode();
   if (code !== 200) throw new Error('Tracker returned ' + code + ': ' + res.getContentText().slice(0, 300));
   return JSON.parse(res.getContentText());
@@ -177,4 +179,51 @@ function syncJobEmail() {
 function resetCursor() {
   props_().deleteProperty('CURSOR_MS');
   Logger.log('Cursor reset to ' + START_DATE.toISOString());
+}
+
+// ---- Digest ----
+
+var DIGEST_TZ = 'America/Chicago';
+
+/** Run once by hand: schedules sendDigest daily near 7:30 a.m. Central (it skips weekends itself). */
+function installDigestTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'sendDigest') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('sendDigest').timeBased().atHour(7).nearMinute(30).everyDays(1).inTimezone(DIGEST_TZ).create();
+  Logger.log('Scheduled sendDigest for about 7:30 a.m. Central, weekdays.');
+}
+
+/**
+ * The scheduled Digest: weekdays only, at most once a day, and only when there is
+ * something to act on. Sent from your own Gmail to yourself.
+ */
+function sendDigest() {
+  var now = new Date();
+  var weekday = Number(Utilities.formatDate(now, DIGEST_TZ, 'u')); // 1 = Monday ... 7 = Sunday
+  if (weekday > 5) return;
+  var today = Utilities.formatDate(now, DIGEST_TZ, 'yyyy-MM-dd');
+  if (props_().getProperty('DIGEST_SENT_ON') === today) return;
+
+  var digest = request_('get', null, '/api/admin/digest');
+  if (!digest.send) {
+    Logger.log('Quiet day: nothing due and nothing to review, so no Digest.');
+    return;
+  }
+  GmailApp.sendEmail(Session.getActiveUser().getEmail(), digest.subject, digest.text, {
+    htmlBody: digest.html,
+    name: 'Job search tracker'
+  });
+  props_().setProperty('DIGEST_SENT_ON', today);
+  Logger.log('Sent: ' + digest.subject);
+}
+
+/** Run by hand to see today's Digest in the log without sending it. */
+function previewDigest() {
+  var digest = request_('get', null, '/api/admin/digest');
+  if (!digest.send) {
+    Logger.log('Quiet day: no Digest would be sent.');
+    return;
+  }
+  Logger.log(digest.subject + '\n\n' + digest.text);
 }

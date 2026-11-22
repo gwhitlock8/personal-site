@@ -93,3 +93,9 @@ A Google Apps Script in your own Gmail account sends job-search email to the tra
 5. Run `testConnection` once and approve the permissions. Then run `installTrigger` once.
 
 The first runs work back to October 1, 2026, 50 messages per run. Moonshot's rate limit is shared by the whole account, so email classification is capped at `ADMIN_MODEL_RPM` calls a minute (default 50, half of the Tier 2 limit of 100), leaving the rest for the public chat; anything over the cap is retried next run. If your Moonshot tier changes, set `ADMIN_MODEL_RPM` in Vercel to about half the new RPM. `resetCursor` starts over; the site skips messages it has already seen. When `scripts/gmail-sync.gs` changes, paste the new version in by hand.
+
+### Weekday Digest
+
+Each weekday around 7:30 a.m. Central, the same Apps Script fetches the Digest from `/api/admin/digest` (same secret as the sync) and emails it to you from your own Gmail: follow-ups due, Proposed Changes to review, and a Pipeline summary. On days with nothing to act on, no email is sent.
+
+Setup: paste the updated `scripts/gmail-sync.gs` into the Apps Script project and run `installDigestTrigger` once. `previewDigest` shows today's Digest in the log without sending it.

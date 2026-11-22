@@ -224,4 +224,33 @@ try { await budgetedClassify(email("r1")); } catch (e) { limitedErr = e; }
 limiter.close();
 ok("Moonshot 429 becomes RateLimited", () => assert.ok(limitedErr instanceof RateLimited, String(limitedErr)));
 
+// ---- Digest ----
+import { buildDigest } from "../lib/admin/digest";
+
+const dNow = new Date("2026-11-24T13:30:00Z"); // Tuesday 7:30 a.m. Central
+const fresh = { ...app("Applied", "2026-11-23T15:00:00Z"), id: "fresh", company: "Fresh Co", role: "SE" };
+const stale = { ...app("Applied", "2026-11-14T15:00:00Z"), id: "stale", company: "Stale <Co> & Sons", role: "SE" };
+const interview = { ...app("Demo", "2026-11-17T15:00:00Z"), id: "demo", company: "Demo AI", role: "Solutions Engineer" };
+const old = { ...app("Applied", "2026-10-01T15:00:00Z"), id: "old", company: "Old Inc", role: "SE" };
+const sampleEmail = { messageId: "m", threadId: "t", from: "x", subject: "Hi", date: "2026-11-23T15:00:00Z", snippet: "", direction: "in" as const, link: "https://mail.google.com/x" };
+
+ok("Digest: quiet day sends nothing", () => {
+  const d = buildDigest([fresh], [], "https://example.com", dNow);
+  assert.equal(d.send, false);
+  assert.deepEqual(d.counts, { followUps: 0, proposals: 0 });
+});
+
+ok("Digest: subject, ordering, links, escaping", () => {
+  const proposals = [{ id: "p", createdAt: "", kind: "stage" as const, itemId: "demo", stage: "Final" as const, email: sampleEmail, reason: "r" }];
+  const d = buildDigest([fresh, stale, interview, old], proposals, "https://example.com/", dNow);
+  assert.equal(d.send, true);
+  assert.equal(d.subject, "Job search: 3 follow-ups, 1 change to review");
+  const order = ["Demo AI", "Stale", "Old Inc"].map((n) => d.text.indexOf(n));
+  assert.ok(order[0] < order[1] && order[1] < order[2], d.text);
+  assert.ok(d.text.includes("https://example.com/admin/items/demo"));
+  assert.ok(d.text.includes("Demo AI · Solutions Engineer: move to Final"));
+  assert.ok(d.html.includes("Stale &lt;Co&gt; &amp; Sons") && !d.html.includes("<Co>"));
+  assert.ok(d.text.includes("4 active Applications (3 Applied, 1 Demo), 0 open Opportunities."));
+});
+
 console.log("\nAll admin tests passed.");

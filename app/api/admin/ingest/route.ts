@@ -1,7 +1,7 @@
-import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { budgetedClassify, ingestEmail, RateLimited, type IngestOutcome } from "@/lib/admin/ingest";
 import { trackedThreads } from "@/lib/admin/repo";
+import { authorizedScript } from "@/lib/admin/script-auth";
 import type { EmailRef } from "@/lib/admin/pipeline";
 
 // Private endpoint for the Gmail Apps Script.
@@ -15,15 +15,6 @@ export const maxDuration = 60;
 
 const MAX_BATCH = 10; // sequential Kimi calls; keeps each request well under maxDuration
 
-function authorized(req: Request): boolean {
-  const secret = process.env.ADMIN_INGEST_SECRET;
-  if (!secret || secret.length < 32) return false;
-  const header = req.headers.get("authorization") ?? "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
-  const a = Buffer.from(token);
-  const b = Buffer.from(secret);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
 
 const GmailId = z.string().regex(/^[0-9a-f]{8,32}$/i);
 const Message = z.object({
@@ -38,12 +29,12 @@ const Message = z.object({
 const Body = z.object({ messages: z.array(Message).max(MAX_BATCH) });
 
 export async function GET(req: Request) {
-  if (!authorized(req)) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!authorizedScript(req)) return Response.json({ error: "Unauthorized" }, { status: 401 });
   return Response.json({ threads: await trackedThreads() });
 }
 
 export async function POST(req: Request) {
-  if (!authorized(req)) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!authorizedScript(req)) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Invalid body", issues: parsed.error.issues.slice(0, 5) }, { status: 400 });
