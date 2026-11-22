@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { runFit } from "@/lib/chains";
 import { attemptLogin, clientIp, logout, requireAdmin } from "@/lib/admin/auth";
 import { AdminStoreNotConfigured } from "@/lib/admin/db";
-import { addEvent, deleteItem, getItem, newId, saveItem } from "@/lib/admin/repo";
+import { addEvent, deleteItem, getItem, getProposal, linkThread, listProposals, newId, removeProposal, saveItem } from "@/lib/admin/repo";
+import { logEmail, proposeStage } from "@/lib/admin/ingest";
+import { isForwardMove } from "@/lib/admin/matching";
 import { isStage, type Application, type Opportunity } from "@/lib/admin/pipeline";
 
 const MIN_JD = 200;
@@ -211,6 +213,63 @@ export async function removeItem(id: string, form: FormData) {
   await load(id);
   if (form.get("confirm") !== "yes") return;
   await deleteItem(id);
+  for (const p of await listProposals()) if (p.itemId === id) await removeProposal(p.id);
   revalidatePath("/admin");
   redirect("/admin");
+}
+
+// ---- Proposed Changes ----
+
+export async function approveProposal(id: string, form: FormData) {
+  await requireAdmin();
+  const p = await getProposal(id);
+  if (!p) return;
+
+  if (p.kind === "stage" && p.itemId && p.stage) {
+    const item = await getItem(p.itemId);
+    if (item?.kind === "application" && isForwardMove(item.stage, p.stage)) {
+      const from = item.stage;
+      item.stage = p.stage;
+      await addEvent(item, "stage-change", `${from} → ${p.stage} (from an email: ${p.reason})`, p.email.link);
+    }
+  }
+
+  if (p.kind === "attach") {
+    const chosen = String(form.get("itemId") ?? "");
+    if (!p.candidateIds?.includes(chosen)) return;
+    const item = await getItem(chosen);
+    if (!item) return;
+    await logEmail(item, p.email, p.reason);
+    await proposeStage(item, p.email, p.suggestedStage, p.reason);
+  }
+
+  if (p.kind === "new-opportunity") {
+    const company = text(form, "company", 120) || p.company || "";
+    const role = text(form, "role", 160) || p.role || "";
+    if (!company || !role) return;
+    const now = new Date().toISOString();
+    const opp: Opportunity = {
+      id: newId(),
+      kind: "opportunity",
+      company,
+      role,
+      contact: p.email.from.slice(0, 200),
+      status: "open",
+      createdAt: now,
+      updatedAt: now,
+      lastEventAt: p.email.date,
+    };
+    await saveItem(opp);
+    await addEvent(opp, "created", `Opportunity from an email: ${p.reason}`, p.email.link, new Date(p.email.date));
+    await linkThread(p.email.threadId, opp.id);
+  }
+
+  await removeProposal(id);
+  revalidatePath("/admin", "layout");
+}
+
+export async function dismissProposal(id: string) {
+  await requireAdmin();
+  await removeProposal(id);
+  revalidatePath("/admin", "layout");
 }

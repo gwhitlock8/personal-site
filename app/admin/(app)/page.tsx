@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { listItems } from "@/lib/admin/repo";
+import { listItems, listProposals } from "@/lib/admin/repo";
 import { ACTIVE_STAGES, END_STAGES, followUp, type Application, type Item, type Opportunity } from "@/lib/admin/pipeline";
 import { requireAdmin } from "@/lib/admin/auth";
 import { ago, FollowUpBadge } from "./ui";
 
 export default async function Pipeline() {
   await requireAdmin();
-  const items = await listItems();
+  const [items, proposals] = await Promise.all([listItems(), listProposals()]);
   const now = new Date();
 
   const apps = items.filter((i): i is Application => i.kind === "application");
@@ -38,6 +38,18 @@ export default async function Pipeline() {
           </Link>
         </div>
       </div>
+
+      {proposals.length > 0 && (
+        <Link
+          href="/admin/review"
+          className="mt-6 flex items-center justify-between rounded-lg border border-cobalt/30 bg-cobalt-soft px-4 py-3 text-sm text-cobalt-deep hover:border-cobalt"
+        >
+          <span>
+            <span className="font-semibold">{proposals.length}</span> Proposed {proposals.length === 1 ? "Change" : "Changes"} from your email to review
+          </span>
+          <span aria-hidden>→</span>
+        </Link>
+      )}
 
       {items.length === 0 ? (
         <p className="mt-10 max-w-lg text-slate">

@@ -103,3 +103,38 @@ export function followUp(item: Item, now = new Date()): FollowUp | null {
   }
   return null;
 }
+
+// ---- Email and Proposed Changes ----
+
+/** The minimal fields kept from a Gmail message. Full bodies stay in Gmail. */
+export type EmailRef = {
+  messageId: string;
+  threadId: string;
+  from: string;
+  subject: string;
+  date: string; // ISO
+  snippet: string; // short, trimmed
+  direction: "in" | "out";
+  link: string; // opens the thread in Gmail
+};
+
+/**
+ * A change the assistant suggests from an email. Nothing changes until Gavin approves.
+ * - stage: move an item to a new Stage
+ * - attach: the email could belong to several items; Gavin picks one
+ * - new-opportunity: the email matched nothing; create an Opportunity from it
+ */
+export type ProposedChange = {
+  id: string;
+  createdAt: string;
+  kind: "stage" | "attach" | "new-opportunity";
+  email: EmailRef;
+  reason: string;
+  itemId?: string;
+  stage?: Stage;
+  candidateIds?: string[];
+  company?: string;
+  role?: string;
+  /** For attach: a Stage to propose once Gavin picks the item. */
+  suggestedStage?: Stage;
+};

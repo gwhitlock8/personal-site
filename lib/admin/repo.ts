@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { adminDb } from "./db";
-import type { EventKind, EventRecord, Item } from "./pipeline";
+import type { EventKind, EventRecord, Item, ProposedChange } from "./pipeline";
 
 // Storage layout in the admin database:
 //   items          sorted set of item ids, scored by updatedAt
@@ -49,4 +49,53 @@ export async function addEvent(item: Item, kind: EventKind, summary: string, lin
   if (event.at > item.lastEventAt) item.lastEventAt = event.at;
   await saveItem(item);
   return event;
+}
+
+// ---- Email bookkeeping ----
+//   seen:<messageId>    a message already processed (kept a year)
+//   thread:<threadId>   the item a Gmail thread belongs to
+//   proposals           sorted set of Proposed Change ids, by createdAt
+//   proposal:<id>       JSON of a Proposed Change
+
+const YEAR = 365 * 86_400;
+
+export async function wasSeen(messageId: string) {
+  return (await adminDb().get(`seen:${messageId}`)) !== null;
+}
+export async function markSeen(messageId: string) {
+  await adminDb().set(`seen:${messageId}`, "1", YEAR);
+}
+
+export async function threadItem(threadId: string) {
+  return adminDb().get(`thread:${threadId}`);
+}
+export async function linkThread(threadId: string, itemId: string) {
+  const db = adminDb();
+  await db.set(`thread:${threadId}`, itemId);
+  await db.zadd("threads", Date.now(), threadId);
+}
+/** Thread ids tied to items, so the Gmail script can check them for new messages. */
+export async function trackedThreads(): Promise<string[]> {
+  return adminDb().zrevAll("threads");
+}
+
+export async function saveProposal(p: ProposedChange) {
+  const db = adminDb();
+  await db.set(`proposal:${p.id}`, JSON.stringify(p));
+  await db.zadd("proposals", Date.parse(p.createdAt), p.id);
+}
+export async function getProposal(id: string): Promise<ProposedChange | null> {
+  const raw = await adminDb().get(`proposal:${id}`);
+  return raw ? (JSON.parse(raw) as ProposedChange) : null;
+}
+export async function listProposals(): Promise<ProposedChange[]> {
+  const db = adminDb();
+  const ids = await db.zrevAll("proposals");
+  const raw = await db.mget(ids.map((id) => `proposal:${id}`));
+  return raw.filter((r): r is string => !!r).map((r) => JSON.parse(r) as ProposedChange);
+}
+export async function removeProposal(id: string) {
+  const db = adminDb();
+  await db.zrem("proposals", id);
+  await db.del(`proposal:${id}`);
 }

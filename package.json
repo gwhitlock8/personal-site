@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx scripts/test-retrieval.ts && tsx scripts/test-admin.ts",
     "ask": "tsx --env-file=.env.local scripts/ask.ts",
-    "admin:setup": "tsx scripts/admin-setup.ts"
+    "admin:setup": "tsx scripts/admin-setup.ts",
+    "admin:ingest-secret": "tsx scripts/admin-ingest-secret.ts"
   },
   "dependencies": {
     "@langchain/core": "^1.4.1",

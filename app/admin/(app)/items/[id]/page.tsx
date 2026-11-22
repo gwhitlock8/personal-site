@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/auth";
-import { getItem, listEvents } from "@/lib/admin/repo";
+import { getItem, listEvents, listProposals } from "@/lib/admin/repo";
+import Proposals from "../../Proposals";
 import { followUp, STAGES } from "@/lib/admin/pipeline";
 import {
   addNote,
@@ -29,7 +30,8 @@ export default async function ItemPage({ params }: Props) {
   const { id } = await params;
   const item = await getItem(id);
   if (!item) notFound();
-  const events = await listEvents(id);
+  const [events, allProposals] = await Promise.all([listEvents(id), listProposals()]);
+  const proposals = allProposals.filter((p) => p.itemId === id);
   const f = followUp(item);
   const app = item.kind === "application" ? item : null;
   const opp = item.kind === "opportunity" ? item : null;
@@ -55,8 +57,14 @@ export default async function ItemPage({ params }: Props) {
         </p>
         {f && <FollowUpBadge reason={f.reason} />}
 
+        {proposals.length > 0 && (
+          <div className="mt-6">
+            <Proposals proposals={proposals} items={new Map([[item.id, item]])} />
+          </div>
+        )}
+
         {app && (
-          <form action={changeStage.bind(null, id)} className="mt-6 flex items-end gap-2">
+          <form key={app.stage} action={changeStage.bind(null, id)} className="mt-6 flex items-end gap-2">
             <label className={label}>
               Stage
               <select name="stage" defaultValue={app.stage} className={`${field} w-56`}>
@@ -165,7 +173,7 @@ export default async function ItemPage({ params }: Props) {
       <aside className="space-y-8">
         <section>
           <h2 className="font-semibold">Details</h2>
-          <form action={updateDetails.bind(null, id)} className="mt-3 space-y-3">
+          <form key={item.updatedAt} action={updateDetails.bind(null, id)} className="mt-3 space-y-3">
             <label className={label}>
               Company
               <input name="company" defaultValue={item.company} className={field} />

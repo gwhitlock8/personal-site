@@ -134,7 +134,11 @@ export function adminDb(): AdminKV {
     process.env.ADMIN_KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
   let base: AdminKV;
   if (url && token) base = upstash(url, token);
-  else if (process.env.ADMIN_STORE === "memory") base = memory();
+  else if (process.env.ADMIN_STORE === "memory") {
+    // One store per process, shared by every route bundle (Next may load this module more than once).
+    const g = globalThis as { __adminMemoryStore?: AdminKV };
+    base = g.__adminMemoryStore ??= memory();
+  }
   else throw new AdminStoreNotConfigured();
   cached = prefixed(base, ADMIN_PREFIX);
   return cached;

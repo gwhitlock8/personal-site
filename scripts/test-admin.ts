@@ -100,4 +100,98 @@ ok("open Opportunity: 2 business days; end states never due", () => {
   assert.equal(followUp(app("Offer", "2026-01-01T00:00:00Z"), now), null);
 });
 
+// ---- Email matching ----
+import { companiesMatch, domainLabel, emailDomain, isForwardMove, matchEmail, normalizeCompany, roleSimilarity } from "../lib/admin/matching";
+
+ok("email domains and company names", () => {
+  assert.equal(emailDomain("Jane Doe <jane@mail.rox.com>"), "mail.rox.com");
+  assert.equal(emailDomain("no-reply@ashbyhq.com"), "ashbyhq.com");
+  assert.equal(domainLabel("mail.rox.com"), "rox");
+  assert.equal(domainLabel("acme.co.uk"), "acme");
+  assert.equal(normalizeCompany("Rox Data Corp."), "roxdata");
+  assert.ok(companiesMatch("Rox", "Rox Data Corp"));
+  assert.ok(!companiesMatch("Ro", "Rox"));
+  assert.ok(!companiesMatch("Box", "Rox"));
+  assert.ok(roleSimilarity("Solutions Engineer (Austin)", "Solutions Engineer") === 1);
+  assert.ok(roleSimilarity("Account Executive", "Solutions Engineer") === 0);
+});
+
+ok("Stage proposals only move forward", () => {
+  assert.ok(isForwardMove("Applied", "Recruiter Screen"));
+  assert.ok(isForwardMove("Demo", "Rejected"));
+  assert.ok(!isForwardMove("Technical", "Recruiter Screen"));
+  assert.ok(!isForwardMove("Rejected", "Applied"));
+  assert.ok(!isForwardMove("Applied", "Applied"));
+});
+
+const t = "2026-11-01T00:00:00Z";
+const rox = { ...app("Applied", t), id: "rox", company: "Rox", role: "Solutions Engineer (Austin)" };
+const roxAe = { ...app("Applied", t), id: "rox-ae", company: "Rox", role: "Account Executive" };
+const acme = { ...opp(t), id: "acme", company: "Acme AI", role: "Sales Engineer", contact: "Sam <sam@acme.ai>" };
+
+ok("matchEmail: company, domain, role, ambiguity", () => {
+  const items = [rox, acme];
+  let m = matchEmail(items, { company: "Rox Data Corp", role: "", fromAddress: "no-reply@ashbyhq.com" });
+  assert.equal(m.type === "match" && m.item.id, "rox");
+  m = matchEmail(items, { company: "", role: "", fromAddress: "Sam <sam@acme.ai>" });
+  assert.equal(m.type === "match" && m.item.id, "acme");
+  m = matchEmail(items, { company: "Unknown", role: "", fromAddress: "x@gmail.com" });
+  assert.equal(m.type, "none");
+  m = matchEmail([rox, roxAe], { company: "Rox", role: "Solutions Engineer", fromAddress: "a@rox.com" });
+  assert.equal(m.type === "match" && m.item.id, "rox");
+  m = matchEmail([rox, roxAe], { company: "Rox", role: "", fromAddress: "a@rox.com" });
+  assert.equal(m.type, "ambiguous");
+});
+
+// ---- Ingest flow (in-memory store, stand-in classifier) ----
+process.env.ADMIN_STORE = "memory";
+const { ingestEmail } = await import("../lib/admin/ingest");
+const repo = await import("../lib/admin/repo");
+type C = import("../lib/admin/classify").Classification;
+const classifier = (c: Partial<C>) => async () => ({ category: "other-job-related", company: "", role: "", stage: "none", summary: "s", ...c }) as C;
+const email = (id: string, over: Partial<import("../lib/admin/pipeline").EmailRef> = {}) => ({
+  messageId: id.padEnd(12, "0"), threadId: `t${id}`.padEnd(12, "0"), from: "no-reply@ashbyhq.com", subject: "Subject",
+  date: "2026-11-10T15:00:00.000Z", snippet: "snippet", direction: "in" as const, link: "https://mail.google.com/x", ...over,
+});
+
+const results: string[] = [];
+// 1. confirmation with no match -> creates an Application
+results.push(await ingestEmail(email("a1"), classifier({ category: "application-confirmation", company: "Rox Data Corp", role: "Solutions Engineer", stage: "Applied", summary: "Thanks for applying" })));
+// 2. same message again -> duplicate
+results.push(await ingestEmail(email("a1"), classifier({})));
+// 3. same thread, scheduling -> Event + Stage proposal
+results.push(await ingestEmail(email("a2", { threadId: email("a1").threadId, date: "2026-11-12T15:00:00.000Z" }), classifier({ category: "scheduling", stage: "Recruiter Screen", summary: "Recruiter call booked" })));
+// 4. Gavin's reply in that thread -> Event, no classifier call
+results.push(await ingestEmail(email("a3", { threadId: email("a1").threadId, direction: "out", date: "2026-11-12T16:00:00.000Z" }), async () => { throw new Error("should not classify"); }));
+// 5. outgoing mail outside tracked threads -> ignored
+results.push(await ingestEmail(email("a4", { direction: "out" }), async () => { throw new Error("should not classify"); }));
+// 6. newsletter -> ignored
+results.push(await ingestEmail(email("a5"), classifier({ category: "not-job-related" })));
+// 7. recruiter outreach, unknown company -> new-opportunity proposal
+results.push(await ingestEmail(email("a6", { from: "Pat <pat@newco.ai>" }), classifier({ category: "recruiter-outreach", company: "NewCo", role: "Solutions Engineer" })));
+// 8. classifier error -> throws, not marked seen
+let threw = false;
+try { await ingestEmail(email("a7"), async () => { throw new Error("model down"); }); } catch { threw = true; }
+
+ok("ingest flow outcomes", () => {
+  assert.deepEqual(results, ["created-application", "duplicate", "proposed", "attached", "ignored", "ignored", "proposed"]);
+  assert.ok(threw);
+});
+
+const items = await repo.listItems();
+const created = items.find((i) => i.company === "Rox Data Corp")!;
+const events = await repo.listEvents(created.id);
+const proposals = await repo.listProposals();
+const seen7 = await repo.wasSeen(email("a7").messageId);
+
+ok("ingest flow state", () => {
+  assert.equal(items.length, 1);
+  assert.equal(created.kind === "application" && created.stage, "Applied"); // stage NOT changed without approval
+  assert.equal(events.length, 3); // created + scheduling email + reply
+  assert.equal(created.lastEventAt, "2026-11-12T16:00:00.000Z");
+  assert.deepEqual(proposals.map((p) => p.kind).sort(), ["new-opportunity", "stage"]);
+  assert.equal(proposals.find((p) => p.kind === "stage")!.stage, "Recruiter Screen");
+  assert.ok(!seen7); // retried next run
+});
+
 console.log("\nAll admin tests passed.");

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
+import { listProposals } from "@/lib/admin/repo";
 import { logoutAction } from "../actions";
 
 export const metadata: Metadata = { title: "Admin | Gavin Whitlock", robots: { index: false, follow: false } };
@@ -8,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
+  const pending = (await listProposals()).length;
   return (
     <div className="mx-auto max-w-[90rem] px-5 sm:px-8">
       <header className="flex items-center justify-between border-b border-line py-4">
@@ -17,6 +19,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <Link href="/admin" className="text-slate hover:text-ink">
             Pipeline
+          </Link>
+          <Link href="/admin/review" className="text-slate hover:text-ink">
+            Review
+            {pending > 0 && (
+              <span className="ml-1.5 rounded-full bg-cobalt px-1.5 py-0.5 text-[11px] font-semibold text-white">{pending}</span>
+            )}
           </Link>
           <Link href="/admin/new" className="text-slate hover:text-ink">
             Add

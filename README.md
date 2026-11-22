@@ -81,3 +81,15 @@ Admin data shares the site's existing Upstash database, with every key prefixed 
 Five wrong attempts from one IP lock login for 15 minutes. Each authenticator code works only once.
 
 To try it locally, put the three variables in `.env.local` along with `ADMIN_STORE=memory` (data resets when the server restarts).
+
+### Gmail sync (Apps Script)
+
+A Google Apps Script in your own Gmail account sends job-search email to the tracker every 15 minutes: only the sender, subject, date, a short snippet and the Gmail ids. Kimi K3 turns each one into an Event and, where it implies a new Stage, a Proposed Change you approve under **Review**. Why Apps Script instead of the Gmail API: [docs/adr/0001](./docs/adr/0001-apps-script-for-gmail.md).
+
+1. Run `npm run admin:ingest-secret` and add the printed `ADMIN_INGEST_SECRET` in Vercel (Production). Redeploy.
+2. In Gmail, create a label named **Job Search**. Put it on recruiter threads that don't come from an applicant tracking system.
+3. Go to [script.google.com](https://script.google.com), create a project, and paste in `scripts/gmail-sync.gs`.
+4. In the project's **Project Settings > Script Properties**, add `INGEST_SECRET` with the same value as step 1.
+5. Run `testConnection` once and approve the permissions. Then run `installTrigger` once.
+
+The first runs work back to October 1, 2026, 40 messages per run. `resetCursor` starts over; the site skips messages it has already seen. When `scripts/gmail-sync.gs` changes, paste the new version in by hand.
