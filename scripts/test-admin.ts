@@ -194,4 +194,33 @@ ok("ingest flow state", () => {
   assert.ok(!seen7); // retried next run
 });
 
+// ---- Model budget and rate limits ----
+import http from "node:http";
+import type { AddressInfo } from "node:net";
+const { budgetedClassify, RateLimited } = await import("../lib/admin/ingest");
+
+// Budget: 2 calls a minute (retry once if the test straddles a minute boundary).
+let budget: boolean[] = [];
+for (let attempt = 0; attempt < 2; attempt++) {
+  const minute = Math.floor(Date.now() / 60_000);
+  budget = [await repo.takeModelBudget(), await repo.takeModelBudget(), await repo.takeModelBudget()];
+  if (Math.floor(Date.now() / 60_000) === minute) break;
+}
+ok("model budget allows 2 calls a minute", () => assert.deepEqual(budget, [true, true, false]));
+
+// A 429 from Moonshot becomes RateLimited ("deferred"), not an error.
+const { adminDb } = await import("../lib/admin/db");
+await adminDb().del(`model-budget:${Math.floor(Date.now() / 60_000)}`); // fresh budget for this test
+const limiter = http.createServer((_req, res) => {
+  res.writeHead(429, { "Content-Type": "application/json", "retry-after": "1" });
+  res.end(JSON.stringify({ error: { message: "request reached organization max RPM: 3", type: "rate_limit_reached_error" } }));
+});
+await new Promise<void>((r) => limiter.listen(0, r));
+process.env.MOONSHOT_BASE_URL = `http://127.0.0.1:${(limiter.address() as AddressInfo).port}/v1`;
+process.env.MOONSHOT_API_KEY = "test-key";
+let limitedErr: unknown;
+try { await budgetedClassify(email("r1")); } catch (e) { limitedErr = e; }
+limiter.close();
+ok("Moonshot 429 becomes RateLimited", () => assert.ok(limitedErr instanceof RateLimited, String(limitedErr)));
+
 console.log("\nAll admin tests passed.");

@@ -10,6 +10,7 @@ import {
   newId,
   saveItem,
   saveProposal,
+  takeModelBudget,
   threadItem,
   wasSeen,
 } from "./repo";
@@ -26,7 +27,26 @@ import { isStage, type Application, type EmailRef, type Item, type Stage } from 
 //                      anything else job-related proposes a new Opportunity.
 // Stage changes are always proposals; Gavin approves them.
 
-export type IngestOutcome = "duplicate" | "ignored" | "attached" | "created-application" | "proposed" | "error";
+export type IngestOutcome = "duplicate" | "ignored" | "attached" | "created-application" | "proposed" | "deferred" | "error";
+
+/** Thrown when the model budget is used up or Moonshot asks us to slow down; the email waits for the next run. */
+export class RateLimited extends Error {
+  constructor() {
+    super("Model rate limit reached; try again next run.");
+  }
+}
+
+/** The production classifier, held to the per-minute budget. */
+export const budgetedClassify: Classifier = async (email) => {
+  if (!(await takeModelBudget())) throw new RateLimited();
+  try {
+    return await classifyEmail(email);
+  } catch (err) {
+    const status = (err as { status?: number })?.status;
+    if (status === 429 || /\b429\b|rate limit|max RPM/i.test(String((err as Error)?.message))) throw new RateLimited();
+    throw err;
+  }
+};
 
 const suggested = (c: Classification): Stage | undefined => (c.stage !== "none" && isStage(c.stage) ? c.stage : undefined);
 

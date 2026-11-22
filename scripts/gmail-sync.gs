@@ -19,13 +19,16 @@
  *   3. Run testConnection once (approve the Gmail permissions it asks for).
  *   4. Run installTrigger once. Done; it now runs every 15 minutes.
  *
- * The first runs work back to October 1, 2026, 40 messages per run, until caught up.
+ * The first runs work back to October 1, 2026, 8 messages per run, until caught up.
+ * It sends 2 messages at a time with a pause between, to stay under Kimi's
+ * per-minute limit (shared with the public chat assistant).
  * This file is kept in the repo at scripts/gmail-sync.gs; paste updates in by hand.
  */
 
 var START_DATE = new Date(Date.UTC(2026, 9, 1)); // October 1, 2026
-var MAX_PER_RUN = 40;
-var BATCH_SIZE = 10;
+var MAX_PER_RUN = 8;
+var BATCH_SIZE = 2;
+var PAUSE_MS = 61 * 1000; // between batches; the site allows 2 model calls a minute
 var LABEL = 'job-search'; // Gmail's search name for the "Job Search" label
 
 // Keep in step with ATS_DOMAINS in lib/admin/matching.ts.
@@ -136,6 +139,7 @@ function syncJobEmail() {
 
     var newCursor = cursor;
     for (var i = 0; i < messages.length; i += BATCH_SIZE) {
+      if (i > 0) Utilities.sleep(PAUSE_MS);
       var batch = messages.slice(i, i + BATCH_SIZE);
       var payload = batch.map(function (x) {
         var m = x.message;
@@ -154,7 +158,8 @@ function syncJobEmail() {
       // Advance the cursor only past messages that succeeded, in order.
       var stop = false;
       for (var j = 0; j < results.length; j++) {
-        if (results[j].outcome === 'error') { stop = true; break; }
+        // "error" and "deferred" (rate limit) both get retried on the next run.
+        if (results[j].outcome === 'error' || results[j].outcome === 'deferred') { stop = true; break; }
         newCursor = batch[j].message.getDate().getTime();
       }
       if (stop) break;

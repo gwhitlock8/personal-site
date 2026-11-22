@@ -92,4 +92,4 @@ A Google Apps Script in your own Gmail account sends job-search email to the tra
 4. In the project's **Project Settings > Script Properties**, add `INGEST_SECRET` with the same value as step 1.
 5. Run `testConnection` once and approve the permissions. Then run `installTrigger` once.
 
-The first runs work back to October 1, 2026, 40 messages per run. `resetCursor` starts over; the site skips messages it has already seen. When `scripts/gmail-sync.gs` changes, paste the new version in by hand.
+The first runs work back to October 1, 2026, 8 messages per run (2 at a time, a minute apart), because Moonshot's free tier allows 3 model calls a minute for the whole account and the public chat needs room too. Raising your Moonshot tier lets you raise `MAX_PER_RUN` in the script and `MODEL_CALLS_PER_MINUTE` in `lib/admin/repo.ts`. `resetCursor` starts over; the site skips messages it has already seen. When `scripts/gmail-sync.gs` changes, paste the new version in by hand.

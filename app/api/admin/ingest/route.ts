@@ -1,18 +1,19 @@
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import { ingestEmail, type IngestOutcome } from "@/lib/admin/ingest";
+import { budgetedClassify, ingestEmail, RateLimited, type IngestOutcome } from "@/lib/admin/ingest";
 import { trackedThreads } from "@/lib/admin/repo";
 import type { EmailRef } from "@/lib/admin/pipeline";
 
 // Private endpoint for the Gmail Apps Script.
 //   GET  -> thread ids the tracker follows, so the script can check them for replies
-//   POST -> { messages: [...] } up to 10 at a time; returns an outcome per message
+//   POST -> { messages: [...] } up to 2 at a time (model rate limit); returns an outcome per message.
+//           "deferred" means the per-minute model budget ran out; the script retries next run.
 // Auth: "Authorization: Bearer <ADMIN_INGEST_SECRET>". No session cookie involved.
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MAX_BATCH = 10;
+const MAX_BATCH = 2;
 
 function authorized(req: Request): boolean {
   const secret = process.env.ADMIN_INGEST_SECRET;
@@ -49,7 +50,12 @@ export async function POST(req: Request) {
 
   // One at a time, so two emails from the same company can't both create an Application.
   const results: { messageId: string; outcome: IngestOutcome }[] = [];
+  let limited = false;
   for (const m of parsed.data.messages) {
+    if (limited) {
+      results.push({ messageId: m.messageId, outcome: "deferred" });
+      continue;
+    }
     const email: EmailRef = {
       messageId: m.messageId,
       threadId: m.threadId,
@@ -61,8 +67,13 @@ export async function POST(req: Request) {
       link: `https://mail.google.com/mail/u/0/#all/${m.threadId}`,
     };
     try {
-      results.push({ messageId: m.messageId, outcome: await ingestEmail(email) });
+      results.push({ messageId: m.messageId, outcome: await ingestEmail(email, budgetedClassify) });
     } catch (err) {
+      if (err instanceof RateLimited) {
+        limited = true;
+        results.push({ messageId: m.messageId, outcome: "deferred" }); // not marked seen; retried next run
+        continue;
+      }
       console.error("ingest error", m.messageId, err);
       results.push({ messageId: m.messageId, outcome: "error" }); // not marked seen, so the next run retries it
     }

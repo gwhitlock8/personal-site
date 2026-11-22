@@ -99,3 +99,16 @@ export async function removeProposal(id: string) {
   await db.zrem("proposals", id);
   await db.del(`proposal:${id}`);
 }
+
+// ---- Model budget ----
+// Moonshot's free tier allows 3 requests a minute for the whole account, shared
+// with the public chat assistant. Email classification takes at most 2 a minute,
+// leaving room for visitors.
+
+export const MODEL_CALLS_PER_MINUTE = 2;
+
+/** Reserves one Kimi call for email classification; false when this minute's budget is used. */
+export async function takeModelBudget(): Promise<boolean> {
+  const minute = Math.floor(Date.now() / 60_000);
+  return (await adminDb().incr(`model-budget:${minute}`, 120)) <= MODEL_CALLS_PER_MINUTE;
+}
