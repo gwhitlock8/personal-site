@@ -19,16 +19,17 @@
  *   3. Run testConnection once (approve the Gmail permissions it asks for).
  *   4. Run installTrigger once. Done; it now runs every 15 minutes.
  *
- * The first runs work back to October 1, 2026, 8 messages per run, until caught up.
- * It sends 2 messages at a time with a pause between, to stay under Kimi's
- * per-minute limit (shared with the public chat assistant).
+ * The first runs work back to October 1, 2026, 50 messages per run, until caught up.
+ * The site caps email classification per minute (ADMIN_MODEL_RPM) so the public
+ * chat assistant always has room under Kimi's rate limit; anything over the cap
+ * comes back "deferred" and is retried on the next run.
  * This file is kept in the repo at scripts/gmail-sync.gs; paste updates in by hand.
  */
 
 var START_DATE = new Date(Date.UTC(2026, 9, 1)); // October 1, 2026
-var MAX_PER_RUN = 8;
-var BATCH_SIZE = 2;
-var PAUSE_MS = 61 * 1000; // between batches; the site allows 2 model calls a minute
+var MAX_PER_RUN = 50; // ~5 requests of 10; stays inside Apps Script's 6-minute limit
+var BATCH_SIZE = 10;  // must not exceed MAX_BATCH in app/api/admin/ingest/route.ts
+var PAUSE_MS = 1000;  // small gap between requests
 var LABEL = 'job-search'; // Gmail's search name for the "Job Search" label
 
 // Keep in step with ATS_DOMAINS in lib/admin/matching.ts.

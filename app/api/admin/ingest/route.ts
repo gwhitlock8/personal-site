@@ -6,14 +6,14 @@ import type { EmailRef } from "@/lib/admin/pipeline";
 
 // Private endpoint for the Gmail Apps Script.
 //   GET  -> thread ids the tracker follows, so the script can check them for replies
-//   POST -> { messages: [...] } up to 2 at a time (model rate limit); returns an outcome per message.
+//   POST -> { messages: [...] } up to 10 at a time; returns an outcome per message.
 //           "deferred" means the per-minute model budget ran out; the script retries next run.
 // Auth: "Authorization: Bearer <ADMIN_INGEST_SECRET>". No session cookie involved.
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MAX_BATCH = 2;
+const MAX_BATCH = 10; // sequential Kimi calls; keeps each request well under maxDuration
 
 function authorized(req: Request): boolean {
   const secret = process.env.ADMIN_INGEST_SECRET;

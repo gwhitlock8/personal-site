@@ -101,14 +101,18 @@ export async function removeProposal(id: string) {
 }
 
 // ---- Model budget ----
-// Moonshot's free tier allows 3 requests a minute for the whole account, shared
-// with the public chat assistant. Email classification takes at most 2 a minute,
-// leaving room for visitors.
+// Moonshot's rate limit covers the whole account and is shared with the public
+// chat assistant. Email classification takes at most ADMIN_MODEL_RPM calls a
+// minute (default 50, half of the Tier 2 limit of 100), leaving the rest for
+// visitors. Set ADMIN_MODEL_RPM in Vercel when the Moonshot tier changes.
 
-export const MODEL_CALLS_PER_MINUTE = 2;
+export function modelCallsPerMinute(): number {
+  const n = Number(process.env.ADMIN_MODEL_RPM);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 50;
+}
 
 /** Reserves one Kimi call for email classification; false when this minute's budget is used. */
 export async function takeModelBudget(): Promise<boolean> {
   const minute = Math.floor(Date.now() / 60_000);
-  return (await adminDb().incr(`model-budget:${minute}`, 120)) <= MODEL_CALLS_PER_MINUTE;
+  return (await adminDb().incr(`model-budget:${minute}`, 120)) <= modelCallsPerMinute();
 }

@@ -199,14 +199,15 @@ import http from "node:http";
 import type { AddressInfo } from "node:net";
 const { budgetedClassify, RateLimited } = await import("../lib/admin/ingest");
 
-// Budget: 2 calls a minute (retry once if the test straddles a minute boundary).
+// Budget: capped per minute; test with a cap of 2 (retry once if the test straddles a minute boundary).
+process.env.ADMIN_MODEL_RPM = "2";
 let budget: boolean[] = [];
 for (let attempt = 0; attempt < 2; attempt++) {
   const minute = Math.floor(Date.now() / 60_000);
   budget = [await repo.takeModelBudget(), await repo.takeModelBudget(), await repo.takeModelBudget()];
   if (Math.floor(Date.now() / 60_000) === minute) break;
 }
-ok("model budget allows 2 calls a minute", () => assert.deepEqual(budget, [true, true, false]));
+ok("model budget enforces ADMIN_MODEL_RPM", () => assert.deepEqual(budget, [true, true, false]));
 
 // A 429 from Moonshot becomes RateLimited ("deferred"), not an error.
 const { adminDb } = await import("../lib/admin/db");
