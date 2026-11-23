@@ -1,5 +1,7 @@
 // Small shared pieces for the admin screens.
 
+import type { Fit } from "@/lib/chains";
+
 export const field =
   "mt-1 w-full rounded-md border border-line bg-card px-3 py-2 text-[15px] outline-none focus:border-slate";
 export const label = "block text-sm font-medium";
@@ -25,5 +27,34 @@ export function FollowUpBadge({ reason }: { reason: string }) {
     <p className="mt-2 rounded-md bg-amber-50 px-2 py-1 text-[12px] leading-snug text-amber-900 ring-1 ring-amber-200">
       {reason}
     </p>
+  );
+}
+
+export function FitCard({ fit, checkedAt }: { fit: Fit; checkedAt?: string }) {
+  return (
+    <div className="rounded-lg border border-line bg-card p-4 text-[14px]">
+      <p className="font-medium">{fit.summary}</p>
+      <p className="mt-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate">Matches</p>
+      <ul className="mt-1 space-y-1.5">
+        {fit.matches.map((m, i) => (
+          <li key={i}>
+            <span className="font-medium">{m.requirement}.</span> {m.evidence}
+          </li>
+        ))}
+      </ul>
+      {fit.gaps.length > 0 && (
+        <>
+          <p className="mt-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate">Gaps to prepare for</p>
+          <ul className="mt-1 space-y-1.5">
+            {fit.gaps.map((g, i) => (
+              <li key={i}>
+                <span className="font-medium">{g.requirement}.</span> {g.note}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {checkedAt && <p className="mt-3 text-[12px] text-slate">Checked {formatDate(checkedAt)}</p>}
+    </div>
   );
 }

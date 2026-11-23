@@ -13,7 +13,7 @@ import {
   rerunFit,
   updateDetails,
 } from "../../../actions";
-import { button, field, FollowUpBadge, formatDate, ghost, label, RESUME_VERSIONS } from "../../ui";
+import { button, field, FitCard, FollowUpBadge, formatDate, ghost, label, RESUME_VERSIONS } from "../../ui";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -137,29 +137,8 @@ export default async function ItemPage({ params }: Props) {
               )}
             </div>
             {app.fit ? (
-              <div className="mt-3 rounded-lg border border-line bg-card p-4 text-[14px]">
-                <p className="font-medium">{app.fit.summary}</p>
-                <p className="mt-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate">Matches</p>
-                <ul className="mt-1 space-y-1.5">
-                  {app.fit.matches.map((m, i) => (
-                    <li key={i}>
-                      <span className="font-medium">{m.requirement}.</span> {m.evidence}
-                    </li>
-                  ))}
-                </ul>
-                {app.fit.gaps.length > 0 && (
-                  <>
-                    <p className="mt-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate">Gaps to prepare for</p>
-                    <ul className="mt-1 space-y-1.5">
-                      {app.fit.gaps.map((g, i) => (
-                        <li key={i}>
-                          <span className="font-medium">{g.requirement}.</span> {g.note}
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-                {app.fitCheckedAt && <p className="mt-3 text-[12px] text-slate">Checked {formatDate(app.fitCheckedAt)}</p>}
+              <div className="mt-3">
+                <FitCard fit={app.fit} checkedAt={app.fitCheckedAt} />
               </div>
             ) : (
               <p className="mt-2 text-sm text-slate">

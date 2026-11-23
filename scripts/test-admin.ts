@@ -237,7 +237,7 @@ const sampleEmail = { messageId: "m", threadId: "t", from: "x", subject: "Hi", d
 ok("Digest: quiet day sends nothing", () => {
   const d = buildDigest([fresh], [], "https://example.com", dNow);
   assert.equal(d.send, false);
-  assert.deepEqual(d.counts, { followUps: 0, proposals: 0 });
+  assert.deepEqual(d.counts, { followUps: 0, proposals: 0, jobMatches: 0 });
 });
 
 ok("Digest: subject, ordering, links, escaping", () => {

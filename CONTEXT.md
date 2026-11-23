@@ -51,11 +51,11 @@ The companies whose job boards are checked for new roles.
 _Avoid_: Target list, company list
 
 **Aggregator**:
-A third-party list of open roles across many companies, such as a recruiting agency's job board.
+A third-party list of open roles across many companies, such as a recruiting agency's job board or the monthly Hacker News "Who is hiring?" thread.
 _Avoid_: Feed, source, job site
 
 **Job Match**:
-An open role found on a Watchlist board or aggregator that fits Gavin's search criteria and that he hasn't applied to yet.
+An open role found on a Watchlist board or Aggregator that fits Gavin's search criteria: an SE or presales title, individual contributor, in Austin or remote anywhere in the US. Marking it applied creates an Application; one he passes on is marked Not interested. A Job Match whose posting disappears is Closed.
 _Avoid_: Suggestion, recommendation, posting
 
 **Digest**:

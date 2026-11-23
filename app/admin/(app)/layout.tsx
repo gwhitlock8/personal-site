@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
+import { listJobs } from "@/lib/admin/job-scan";
 import { listProposals } from "@/lib/admin/repo";
 import { logoutAction } from "../actions";
 
@@ -9,7 +10,9 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
-  const pending = (await listProposals()).length;
+  const [proposals, jobs] = await Promise.all([listProposals(), listJobs()]);
+  const pending = proposals.length;
+  const newJobs = jobs.filter((j) => j.status === "new" && !j.closedAt).length;
   return (
     <div className="mx-auto max-w-[90rem] px-5 sm:px-8">
       <header className="flex items-center justify-between border-b border-line py-4">
@@ -25,6 +28,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             {pending > 0 && (
               <span className="ml-1.5 rounded-full bg-cobalt px-1.5 py-0.5 text-[11px] font-semibold text-white">{pending}</span>
             )}
+          </Link>
+          <Link href="/admin/jobs" className="text-slate hover:text-ink">
+            Jobs
+            {newJobs > 0 && <span className="ml-1.5 rounded-full bg-line px-1.5 py-0.5 text-[11px] font-semibold text-ink">{newJobs}</span>}
+          </Link>
+          <Link href="/admin/watchlist" className="text-slate hover:text-ink">
+            Watchlist
           </Link>
           <Link href="/admin/new" className="text-slate hover:text-ink">
             Add

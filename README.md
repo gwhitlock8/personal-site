@@ -99,3 +99,16 @@ The first runs work back to October 1, 2026, 50 messages per run. Moonshot's rat
 Each weekday around 7:30 a.m. Central, the same Apps Script fetches the Digest from `/api/admin/digest` (same secret as the sync) and emails it to you from your own Gmail: follow-ups due, Proposed Changes to review, and a Pipeline summary. On days with nothing to act on, no email is sent.
 
 Setup: paste the updated `scripts/gmail-sync.gs` into the Apps Script project and run `installDigestTrigger` once. `previewDigest` shows today's Digest in the log without sending it.
+
+### Job Matches
+
+`/admin/jobs` lists open SE and presales roles in Austin or remote in the US, each with a Fit Check score. Sources:
+
+- **Watchlist** (`/admin/watchlist`): company job boards on Ashby, Greenhouse or Lever. The starting list is in `lib/admin/watchlist-seed.ts`; after the first scan, edit it on the Watchlist screen (pasting a board URL checks that it works).
+- **Recruiting agency job board**: the PreSales tab of the Notion board. This reads Notion's undocumented public-page API, so it can break if Notion changes it; a failure shows on `/admin/jobs` and the other sources keep working.
+- **Hacker News**: SE-type roles in the current "Who is hiring?" thread.
+
+The search criteria live in `lib/admin/jobs.ts`: Solutions Engineer, Sales Engineer, Solutions Consultant and Presales titles; Solutions Architect and Forward Deployed roles only when the posting says presales (or the company is flagged, like LangChain); no managers, junior roles or post-sales titles; no remote roles tied to another territory.
+
+There's nothing to set up. Each Gmail sync calls `/api/admin/jobs/tick`, which scans once a day and then runs a few Fit Checks per call under the same `ADMIN_MODEL_RPM` budget as email. New matches appear in the Digest (Monday's covers the weekend). "Mark applied" turns a match into an Application with the job description and Fit Check attached.
+

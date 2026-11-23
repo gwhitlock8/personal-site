@@ -20,6 +20,8 @@
  *   4. Run installTrigger once. Done; it now runs every 15 minutes.
  *   5. Run installDigestTrigger once for the weekday-morning Digest (7:30 a.m. Central).
  *      previewDigest shows today's Digest in the log without sending it.
+ *   6. Job Matches need no setup: each sync also asks the site to scan job boards
+ *      (once a day) and run a few Fit Checks. jobTickNow runs that by hand.
  *
  * The first runs work back to October 1, 2026, 50 messages per run, until caught up.
  * The site caps email classification per minute (ADMIN_MODEL_RPM) so the public
@@ -170,9 +172,30 @@ function syncJobEmail() {
 
     if (newCursor > cursor) props_().setProperty('CURSOR_MS', String(newCursor));
     Logger.log('Processed ' + messages.length + ' messages. Caught up to ' + new Date(newCursor).toISOString());
+    jobTick_();
   } finally {
     lock.releaseLock();
   }
+}
+
+// ---- Job Matches ----
+// After each email sync, the site scans job boards (once a day) and runs a few
+// Fit Checks. A failure here never affects email sync.
+
+function jobTick_() {
+  try {
+    var r = request_('post', {}, '/api/admin/jobs/tick');
+    Logger.log('Job Matches: ' + (r.scanned ? 'scanned, ' + r.newMatches + ' new. ' : '') +
+      r.fitChecked + ' Fit Checks run, ' + r.fitPending + ' waiting.' +
+      (r.failedSources && r.failedSources.length ? ' Sources that failed: ' + r.failedSources.join(', ') : ''));
+  } catch (e) {
+    Logger.log('Job Matches tick failed: ' + e.message);
+  }
+}
+
+/** Run by hand to check the job scan without waiting for the next sync. */
+function jobTickNow() {
+  jobTick_();
 }
 
 /** Run by hand to re-scan from October 1 (the site still skips messages it has seen). */
