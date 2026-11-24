@@ -12,7 +12,7 @@ import { loadOwner, MIN_POSTING, sourcesFor, type OwnerContext } from "@/lib/res
 import { draftFromForm } from "@/lib/resume/form";
 import { generateDraft, type TailoredResume } from "@/lib/resume/generate";
 import { fitToOnePage } from "@/lib/resume/pdf/render";
-import { BlobNotConfigured, getResume, parseOwner, saveDraft, savePdfs } from "@/lib/resume/store";
+import { BlobNotConfigured, deleteSaved, discardDraft, getResume, parseOwner, saveDraft, savePdfs } from "@/lib/resume/store";
 
 async function load(ownerStr: string): Promise<OwnerContext> {
   await requireAdmin();
@@ -83,4 +83,26 @@ export async function addGapToBank(ownerStr: string, form: FormData) {
   if (!what || !where) back(ctx, "?error=bank");
   await addExperience({ what, where });
   back(ctx, "?added=1");
+}
+
+/** Deletes one saved resume's two PDFs from Blob and the list. */
+export async function deleteSavedPdf(ownerStr: string, id: string, form: FormData) {
+  const ctx = await load(ownerStr);
+  try {
+    await deleteSaved(ctx.owner, id);
+  } catch (err) {
+    console.error("deleting a saved resume failed", err);
+    back(ctx, "?error=delete");
+  }
+  revalidatePath("/admin", "layout");
+  const to = String(form.get("back") ?? "");
+  redirect(to.startsWith("/admin/") ? to : `${ctx.editorUrl}?deleted=1`);
+}
+
+/** Clears the draft so tailoring can start over; saved PDFs stay. */
+export async function discardDraftAction(ownerStr: string) {
+  const ctx = await load(ownerStr);
+  await discardDraft(ctx.owner);
+  revalidatePath("/admin", "layout");
+  back(ctx, "?discarded=1");
 }

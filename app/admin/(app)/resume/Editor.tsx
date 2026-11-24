@@ -4,8 +4,10 @@ import { blockedTerms, checkLine, untracedTerms, type Flag, type Line } from "@/
 import { MIN_POSTING, sourcesFor, type OwnerContext } from "@/lib/resume/context";
 import { fitToOnePage, pageCount } from "@/lib/resume/pdf/render";
 import { getResume } from "@/lib/resume/store";
-import { addGapToBank, saveEdits, savePdf, tailor } from "../../resume-actions";
-import { button, field, formatDate, ghost } from "../ui";
+import { addGapToBank, discardDraftAction, saveEdits, savePdf, tailor } from "../../resume-actions";
+import { ConfirmButton } from "./ConfirmButton";
+import { SavedResumes } from "./SavedResumes";
+import { button, field, ghost } from "../ui";
 
 // The tailored resume editor, shared by Job Matches and Applications.
 
@@ -15,6 +17,7 @@ const ERRORS: Record<string, string> = {
   blob: "Add a Blob store in Vercel (Storage → Blob, access Private) to save PDFs.",
   generate: "Generating the draft failed. Try again.",
   bank: "Fill in the detail and where it's from.",
+  delete: "Deleting the PDFs failed. Try again.",
 };
 
 const FLAG_TONE: Record<Flag["kind"], string> = {
@@ -50,7 +53,7 @@ function Chips({ ids, sources }: { ids: string[]; sources: Map<string, { text: s
   );
 }
 
-export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: string; terms?: string; saved?: string; added?: string; layout?: string } }) {
+export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: string; terms?: string; saved?: string; added?: string; layout?: string; deleted?: string; discarded?: string } }) {
   const record = await getResume(ctx.owner);
   const draft = record.draft;
   const layout = sp.layout === "ats" ? "ats" : "designed";
@@ -80,6 +83,8 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
       {sp.error === "blocked" && <p className="mt-4 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-900">Remove these before saving: {sp.terms}</p>}
       {sp.error && ERRORS[sp.error] && <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">{ERRORS[sp.error]}</p>}
       {sp.saved && <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">Saved both PDFs. Download them below.</p>}
+      {sp.deleted && <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">Deleted both PDFs.</p>}
+      {sp.discarded && <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">Draft discarded.</p>}
       {sp.added && <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">Added to the Experience bank. Regenerate to use it.</p>}
     </>
   );
@@ -106,6 +111,12 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
             </form>
           )}
         </div>
+        {record.saved.length > 0 && (
+          <section className="mt-6">
+            <p className="font-medium">Saved PDFs</p>
+            <SavedResumes ownerStr={ctx.ownerStr} saved={record.saved} back={`${ctx.editorUrl}?deleted=1`} />
+          </section>
+        )}
       </div>
     );
   }
@@ -274,22 +285,16 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
           {record.saved.length > 0 && (
             <section className="mt-8">
               <p className="font-medium">Saved PDFs</p>
-              <ul className="mt-2 space-y-1 text-sm">
-                {record.saved.map((s) => (
-                  <li key={s.at}>
-                    {formatDate(s.at)}:{" "}
-                    <a className="underline underline-offset-2" href={`/api/admin/resume/file?url=${encodeURIComponent(s.designedUrl)}&name=${encodeURIComponent(`${s.fileBase}.pdf`)}`}>
-                      Designed
-                    </a>{" "}
-                    ·{" "}
-                    <a className="underline underline-offset-2" href={`/api/admin/resume/file?url=${encodeURIComponent(s.atsUrl)}&name=${encodeURIComponent(`${s.fileBase}-ATS.pdf`)}`}>
-                      ATS
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <SavedResumes ownerStr={ctx.ownerStr} saved={record.saved} back={`${ctx.editorUrl}?deleted=1`} />
             </section>
           )}
+
+          <form action={discardDraftAction.bind(null, ctx.ownerStr)} className="mt-8 border-t border-line pt-4">
+            <ConfirmButton message="Discard this draft? Your edits will be lost. Saved PDFs are kept." className="text-sm text-slate hover:text-rose-700">
+              Discard draft
+            </ConfirmButton>
+            <span className="ml-2 text-[13px] text-slate">Clears the draft so you can start over. Saved PDFs are kept.</span>
+          </form>
         </div>
       </div>
     </div>

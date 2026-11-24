@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { getItem, listEvents, listProposals } from "@/lib/admin/repo";
 import Proposals from "../../Proposals";
 import { getResume } from "@/lib/resume/store";
+import { SavedResumes } from "../../resume/SavedResumes";
 import { followUp, STAGES } from "@/lib/admin/pipeline";
 import {
   addNote,
@@ -134,20 +135,7 @@ export default async function ItemPage({ params }: Props) {
               </Link>
             </div>
             {tailored.saved.length ? (
-              <ul className="mt-2 space-y-1 text-sm">
-                {tailored.saved.map((s) => (
-                  <li key={s.at}>
-                    Tailored {formatDate(s.at)}:{" "}
-                    <a className="underline underline-offset-2" href={`/api/admin/resume/file?url=${encodeURIComponent(s.designedUrl)}&name=${encodeURIComponent(`${s.fileBase}.pdf`)}`}>
-                      Designed
-                    </a>{" "}
-                    ·{" "}
-                    <a className="underline underline-offset-2" href={`/api/admin/resume/file?url=${encodeURIComponent(s.atsUrl)}&name=${encodeURIComponent(`${s.fileBase}-ATS.pdf`)}`}>
-                      ATS
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <SavedResumes ownerStr={`app:${id}`} saved={tailored.saved} back={`/admin/items/${id}`} />
             ) : (
               <p className="mt-2 text-sm text-slate">{tailored.draft ? "Draft in progress; no PDF saved yet." : "No tailored resume yet."}</p>
             )}

@@ -1,4 +1,5 @@
-import { put as blobPut } from "@vercel/blob";
+import { randomUUID } from "node:crypto";
+import { del as blobDel, put as blobPut } from "@vercel/blob";
 import { adminDb } from "@/lib/admin/db";
 import type { TailoredResume } from "./generate";
 
@@ -7,7 +8,7 @@ import type { TailoredResume } from "./generate";
 // (resume:app:<id> / resume:job:<key>); PDFs live in a private Vercel Blob store.
 
 export type Owner = { kind: "app"; id: string } | { kind: "job"; key: string };
-export type SavedResume = { at: string; designedUrl: string; atsUrl: string; fileBase: string };
+export type SavedResume = { id: string; at: string; designedUrl: string; atsUrl: string; fileBase: string };
 export type ResumeRecord = { draft?: TailoredResume; saved: SavedResume[] };
 
 export type BlobPut = (
@@ -77,8 +78,36 @@ export async function savePdfs(o: Owner, files: { designed: Buffer; ats: Buffer;
     if (/store|token|unauthori[sz]ed|forbidden/i.test(String((err as Error)?.message ?? err))) throw new BlobNotConfigured();
     throw err;
   }
-  const saved: SavedResume = { at: new Date().toISOString(), designedUrl: designed.url, atsUrl: ats.url, fileBase };
+  const saved: SavedResume = { id: randomUUID(), at: new Date().toISOString(), designedUrl: designed.url, atsUrl: ats.url, fileBase };
   const rec = await getResume(o);
   await putRecord(o, { ...rec, saved: [saved, ...rec.saved] });
   return saved;
+}
+
+export type BlobDel = (urls: string[]) => Promise<void>;
+const defaultDel: BlobDel = (urls) => blobDel(urls);
+
+/**
+ * Deletes one saved resume (both PDFs) from Blob, then from the list. A file
+ * already gone from Blob still leaves the list; any other Blob failure keeps
+ * the row so it can be retried.
+ */
+export async function deleteSaved(o: Owner, id: string, del: BlobDel = defaultDel): Promise<void> {
+  const rec = await getResume(o);
+  const row = rec.saved.find((s) => s.id === id);
+  if (!row) return;
+  try {
+    await del([row.designedUrl, row.atsUrl]);
+  } catch (err) {
+    const e = err as Error;
+    if (!(e?.name === "BlobNotFoundError" || /does not exist|not found/i.test(String(e?.message)))) throw err;
+  }
+  await putRecord(o, { ...rec, saved: rec.saved.filter((s) => s.id !== id) });
+}
+
+/** Clears the draft; saved PDFs stay. Removes the record when nothing is left. */
+export async function discardDraft(o: Owner): Promise<void> {
+  const rec = await getResume(o);
+  if (rec.saved.length) await putRecord(o, { saved: rec.saved });
+  else await adminDb().del(key(o));
 }

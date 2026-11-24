@@ -403,4 +403,66 @@ ok("review: every admin page checks the login itself", () => {
   assert.deepEqual(missing, []);
 });
 
+// ---- Delete saved PDFs and discard drafts ----
+const delOwner = { kind: "app", id: "app-del" } as const;
+process.env.BLOB_READ_WRITE_TOKEN = "test-token";
+const fakePut: import("../lib/resume/store").BlobPut = async (path) => ({ url: `https://s.private.blob.vercel-storage.com/${path}`, pathname: path });
+await store.saveDraft(delOwner, fromBase());
+const keep = await store.savePdfs(delOwner, { designed: Buffer.from("d1"), ats: Buffer.from("a1"), company: "Keep" }, fakePut);
+const drop = await store.savePdfs(delOwner, { designed: Buffer.from("d2"), ats: Buffer.from("a2"), company: "Drop" }, fakePut);
+const deleted: string[][] = [];
+await store.deleteSaved(delOwner, drop.id, async (urls) => {
+  deleted.push(urls);
+});
+const afterDelete = await store.getResume(delOwner);
+ok("delete: removes both files from Blob and the row from the list", () => {
+  assert.deepEqual(deleted, [[drop.designedUrl, drop.atsUrl]]);
+  assert.deepEqual(afterDelete.saved.map((x) => x.fileBase), [keep.fileBase]);
+  assert.ok(afterDelete.draft); // the draft is untouched
+});
+
+let missing: unknown;
+try {
+  await store.deleteSaved(delOwner, "no-such-file", async () => {});
+} catch (e) {
+  missing = e;
+}
+ok("delete: an unknown file changes nothing", () => {
+  assert.equal(missing, undefined);
+});
+
+await store.deleteSaved(delOwner, keep.id, async () => {
+  throw Object.assign(new Error("The requested blob does not exist"), { name: "BlobNotFoundError" });
+});
+const afterGone = await store.getResume(delOwner);
+ok("delete: a file already gone from Blob still leaves the list", () => assert.deepEqual(afterGone.saved, []));
+
+const keepRow = await store.savePdfs(delOwner, { designed: Buffer.from("d3"), ats: Buffer.from("a3"), company: "Keep" }, fakePut);
+let blobDown: unknown;
+try {
+  await store.deleteSaved(delOwner, keepRow.id, async () => {
+    throw new Error("Blob service unavailable");
+  });
+} catch (e) {
+  blobDown = e;
+}
+const afterFail = await store.getResume(delOwner);
+ok("delete: a Blob failure keeps the row so it can be retried", () => {
+  assert.ok(blobDown instanceof Error);
+  assert.deepEqual(afterFail.saved.map((x) => x.fileBase), [keepRow.fileBase]);
+});
+
+await store.discardDraft(delOwner);
+const afterDiscard = await store.getResume(delOwner);
+ok("discard: clears the draft, keeps saved PDFs", () => {
+  assert.equal(afterDiscard.draft, undefined);
+  assert.equal(afterDiscard.saved.length, 1);
+});
+const lone = { kind: "job", key: "lone" } as const;
+await store.saveDraft(lone, fromBase());
+await store.discardDraft(lone);
+const loneRec = await store.getResume(lone);
+ok("discard: empty record afterwards", () => assert.deepEqual(loneRec, { saved: [] }));
+delete process.env.BLOB_READ_WRITE_TOKEN;
+
 console.log("\nAll resume tests passed.");
