@@ -36,7 +36,7 @@ ok("experience: add then list", () => {
 });
 ok("experience: context lines", () => {
   const ctx = exp.experienceAsContext(afterAdd);
-  assert.ok(ctx.includes("[E1] Certified ServiceNow Administrator (CSA)"), ctx);
+  assert.ok(ctx.includes("[E-csa] Certified ServiceNow Administrator (CSA)"), ctx);
   assert.ok(ctx.includes("use when: ServiceNow-heavy roles"), ctx);
 });
 
@@ -90,10 +90,12 @@ ok("sources: ids and notes", () => {
     notes: "a\n\nb",
   });
   const ids = list.map((x) => x.id);
-  for (const id of ["E1", "E2", "N1", "N2", "S1", "B-summary", "B-ach-1"]) assert.ok(ids.includes(id), id);
+  for (const id of ["E-a", "E-b", "S-story", "B-summary", "B-ach-1"]) assert.ok(ids.includes(id), id);
   for (const r of BASE.roles) for (const b of r.bullets) assert.ok(ids.includes(b.id), b.id);
-  assert.equal(list.find((x) => x.id === "E2")!.useWhen, "AI roles");
-  assert.equal(list.find((x) => x.id === "N2")!.text, "b");
+  assert.equal(list.find((x) => x.id === "E-b")!.useWhen, "AI roles");
+  const notes = list.filter((x) => x.id.startsWith("N-"));
+  assert.deepEqual(notes.map((n) => n.text), ["a", "b"]);
+  assert.equal(new Set(ids).size, ids.length);
 });
 
 // ---- Task 4: draft generation ----
@@ -142,14 +144,14 @@ ok("mergeDraft caps bullets at five per role", () => {
 
 let seenPrompt = "";
 const drafted = await gen.generateDraft(
-  { posting: "We need a Solutions Engineer for AI agents. ".repeat(6), sources: [{ id: "E1", text: "Certified ServiceNow Administrator (CSA)." }] },
+  { posting: "We need a Solutions Engineer for AI agents. ".repeat(6), sources: [{ id: "E-csa", text: "Certified ServiceNow Administrator (CSA)." }] },
   async (prompt) => {
     seenPrompt = prompt;
     return rawDraft();
   },
 );
 ok("generateDraft passes sources and posting", () => {
-  assert.ok(seenPrompt.includes("[E1] Certified ServiceNow Administrator (CSA)."));
+  assert.ok(seenPrompt.includes("[E-csa] Certified ServiceNow Administrator (CSA)."));
   assert.ok(seenPrompt.includes("We need a Solutions Engineer for AI agents."));
   assert.equal(drafted.roles.length, 5);
 });
@@ -285,7 +287,7 @@ prev.cut = ["old line"];
 const f = new FormData();
 f.set("tagline", "Solutions Engineer | AI Agents");
 f.set("summary.text", "New summary.");
-f.set("summary.sources", "B-summary, E1");
+f.set("summary.sources", "B-summary, E-csa");
 f.set("role.devrev.0.text", "First DevRev bullet");
 f.set("role.devrev.0.sources", "B-devrev-1");
 f.set("role.devrev.0.order", "2");
@@ -304,7 +306,7 @@ f.set("certifications", "");
 const edited = draftFromForm(f, prev);
 ok("editor form rebuilds the draft", () => {
   assert.equal(edited.tagline, "Solutions Engineer | AI Agents");
-  assert.deepEqual(edited.summary, { text: "New summary.", sources: ["B-summary", "E1"] });
+  assert.deepEqual(edited.summary, { text: "New summary.", sources: ["B-summary", "E-csa"] });
   const devrev = edited.roles.find((r) => r.roleId === "devrev")!;
   assert.deepEqual(devrev.bullets.map((b) => b.text), ["Second DevRev bullet", "First DevRev bullet", "A bullet I typed"]);
   assert.deepEqual(devrev.bullets[2].sources, []); // typed by hand: flagged "no source"
@@ -317,6 +319,88 @@ ok("editor form rebuilds the draft", () => {
   assert.equal(edited.emphasis, "Led with AI.");
   assert.deepEqual(edited.gaps, ["Go"]);
   assert.deepEqual(edited.cut, []); // cuts are recomputed on the next render
+});
+
+// ---- Final review fixes ----
+const checks = await import("../lib/resume/checks");
+const { readFileSync, readdirSync, statSync } = await import("node:fs");
+const pathMod = await import("node:path");
+
+ok("review: the general resume passes the blocked-terms check", () => {
+  assert.deepEqual(checks.resumeBlockedTerms(fromBase()), []);
+  assert.deepEqual(blockedTerms("Demos and architecture workshops across Enterprise Architecture"), []);
+  assert.deepEqual(blockedTerms("Worked with architects on the design"), ["architect"]);
+});
+
+ok("review: the real job title is allowed only outside the tagline and summary", () => {
+  assert.deepEqual(blockedTerms("As AI Solution Architect at ServiceNow, led the POC"), []);
+  const t = fromBase();
+  t.tagline = "Solutions Engineer | AI Solution Architect";
+  assert.deepEqual(checks.resumeBlockedTerms(t), ["architect"]);
+  const u = fromBase();
+  u.summary = { text: "Former AI Solution Architect who builds demos.", sources: ["B-summary"] };
+  assert.deepEqual(checks.resumeBlockedTerms(u), ["architect"]);
+});
+
+ok("review: skills and certifications must come from his material", () => {
+  const srcs: SourceRef[] = [{ id: "E-csa", text: "Certified ServiceNow Administrator (CSA)." }];
+  assert.deepEqual(checks.untracedTerms("AI agents, ServiceNow (ITOM, ITSM, SPM), MEDDPICC", srcs, BASE), []);
+  assert.deepEqual(checks.untracedTerms("AI agents, Kubernetes; Python", srcs, BASE), ["Kubernetes", "Python"]);
+  assert.deepEqual(checks.untracedTerms("Certified ServiceNow Administrator (CSA)", srcs, BASE), []);
+  assert.deepEqual(checks.untracedTerms("AWS Certified Solutions Architect", srcs, BASE), ["AWS Certified Solutions Architect"]);
+});
+
+ok("review: source ids stay stable when the bank or notes change", () => {
+  const bank = [
+    { id: "seed-csa", what: "CSA", where: "certification", createdAt: "" },
+    { id: "seed-cmdb", what: "CMDB", where: "ServiceNow", createdAt: "" },
+    { id: "3f2a9c1e-aaaa-bbbb-cccc-1234567890ab", what: "New", where: "DevRev", createdAt: "" },
+  ];
+  const a = buildSources({ base: BASE, stories: [{ heading: "Why I did a bootcamp", text: "x" }], bank, notes: "one\n\ntwo" });
+  const b = buildSources({ base: BASE, stories: [{ heading: "New story", text: "y" }, { heading: "Why I did a bootcamp", text: "x" }], bank: bank.slice(1), notes: "zero\n\none\n\ntwo" });
+  const id = (list: SourceRef[], text: string) => list.find((x) => x.text.endsWith(text))!.id;
+  assert.equal(id(a, "CMDB"), "E-cmdb");
+  assert.equal(id(a, "CMDB"), id(b, "CMDB"));
+  assert.equal(id(a, "New"), "E-3f2a9c1e");
+  assert.equal(id(a, "x"), id(b, "x"));
+  assert.equal(id(a, "two"), id(b, "two"));
+});
+
+const tall = fromBase();
+tall.achievements = tall.achievements.map((x) => ({ ...x, text: `${x.text} ${"Long supporting detail about the outcome and the customer. ".repeat(6)}` }));
+const tallFit = await pdf.fitToOnePage(tall, BASE);
+ok("review: no pointless cuts when the overflow isn't in the experience bullets", () => {
+  assert.equal(tallFit.tooLong, true);
+  assert.deepEqual(tallFit.resume.cut, []);
+  assert.deepEqual(tallFit.resume.roles.map((r) => r.bullets.length), tall.roles.map((r) => r.bullets.length));
+});
+ok("review: fitToOnePage reports ATS pages", () => {
+  assert.ok(tallFit.atsPages >= 1);
+  assert.equal(fitted.tooLong, false);
+});
+
+const { kimi } = await import("../lib/model");
+process.env.MOONSHOT_API_KEY ??= "test-key";
+ok("review: tailoring's model call stops before Vercel's 60-second limit", () => {
+  const m = kimi(undefined, { timeoutMs: 45_000, maxRetries: 0 }) as unknown as { timeout?: number; caller?: { maxRetries?: number } };
+  assert.equal(m.timeout, 45_000);
+  assert.equal(m.caller?.maxRetries, 0);
+  assert.equal(gen.TAILOR_MODEL.timeoutMs < 60_000 - 5_000, true);
+});
+
+ok("review: every admin page checks the login itself", () => {
+  const root = "app/admin/(app)";
+  const pages: string[] = [];
+  const walk = (d: string) => {
+    for (const n of readdirSync(d)) {
+      const p = pathMod.join(d, n);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (n === "page.tsx") pages.push(p);
+    }
+  };
+  walk(root);
+  const missing = pages.filter((p) => !/await requireAdmin\(\)/.test(readFileSync(p, "utf8")));
+  assert.deepEqual(missing, []);
 });
 
 console.log("\nAll resume tests passed.");

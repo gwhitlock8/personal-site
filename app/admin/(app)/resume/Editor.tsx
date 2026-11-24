@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BASE } from "@/lib/resume/base";
-import { blockedTerms, checkLine, type Flag, type Line } from "@/lib/resume/checks";
+import { blockedTerms, checkLine, untracedTerms, type Flag, type Line } from "@/lib/resume/checks";
 import { MIN_POSTING, sourcesFor, type OwnerContext } from "@/lib/resume/context";
 import { fitToOnePage, pageCount } from "@/lib/resume/pdf/render";
 import { getResume } from "@/lib/resume/store";
@@ -110,7 +110,16 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
     );
   }
 
-  const sources = new Map((await sourcesFor(ctx)).map((s) => [s.id, s]));
+  const sourceList = await sourcesFor(ctx);
+  const sources = new Map(sourceList.map((s) => [s.id, s]));
+  const termFlags = (text: string): Flag[] => {
+    const flags: Flag[] = [];
+    const untraced = untracedTerms(text, sourceList, BASE);
+    if (untraced.length) flags.push({ kind: "no-source", detail: `Not found in your skills or sources: ${untraced.join(", ")}` });
+    const blocked = blockedTerms(text);
+    if (blocked.length) flags.push({ kind: "blocked", detail: `Remove before saving: ${blocked.join(", ")}` });
+    return flags;
+  };
   const flagsFor = (line: Line) => checkLine(line, sources, ctx.posting);
   const fitted = await fitToOnePage(draft, BASE);
   const pages = pageCount(fitted.designed);
@@ -132,7 +141,15 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
             <span className={`ml-auto rounded-full px-2 py-0.5 text-[12px] ring-1 ${pages === 1 ? "bg-emerald-50 text-emerald-900 ring-emerald-200" : "bg-rose-50 text-rose-900 ring-rose-200"}`}>
               {pages === 1 ? "Fits one page" : `${pages} pages`}
             </span>
+            <span className={`rounded-full px-2 py-0.5 text-[12px] ring-1 ${fitted.atsPages === 1 ? "bg-emerald-50 text-emerald-900 ring-emerald-200" : "bg-amber-50 text-amber-900 ring-amber-200"}`}>
+              ATS: {fitted.atsPages} {fitted.atsPages === 1 ? "page" : "pages"}
+            </span>
           </div>
+          {fitted.tooLong && (
+            <p className="mb-2 rounded-md bg-rose-50 px-3 py-2 text-[13px] text-rose-900">
+              Too long for one page even with one bullet per role. Shorten the summary, achievements or skills.
+            </p>
+          )}
           <iframe src={preview} title="Resume preview" className="h-[80vh] w-full rounded-lg border border-line bg-white" />
           {(fitted.resume.cut ?? []).length > 0 && (
             <div className="mt-3 rounded-lg border border-line bg-card p-3 text-[13px]">
@@ -157,7 +174,7 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
                 Tagline
                 <input name="tagline" defaultValue={draft.tagline} className={field} />
               </label>
-              <Flags flags={blockedTerms(draft.tagline).map((t) => ({ kind: "blocked" as const, detail: `Remove before saving: ${t}` }))} />
+              <Flags flags={blockedTerms(draft.tagline, { allowTitle: false }).map((t) => ({ kind: "blocked" as const, detail: `Remove before saving: ${t}` }))} />
             </section>
 
             <section>
@@ -167,7 +184,7 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
                 <Chips ids={draft.summary.sources} sources={sources} />
                 <input name="summary.sources" defaultValue={draft.summary.sources.join(", ")} className="w-40 rounded border border-line px-1.5 py-0.5 text-[12px]" aria-label="Summary sources" />
               </div>
-              <Flags flags={flagsFor(draft.summary)} />
+              <Flags flags={checkLine(draft.summary, sources, ctx.posting, { allowTitle: false })} />
             </section>
 
             {draft.roles.map((r) => {
@@ -213,25 +230,28 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
             <section>
               <p className="font-medium">Skills</p>
               {draft.skills.map((g, i) => (
-                <div key={i} className="mt-2 grid grid-cols-[8rem_1fr] gap-2">
-                  <input name={`skills.${i}.group`} defaultValue={g.group} className="rounded border border-line px-2 py-1" aria-label="Skill group" />
-                  <input name={`skills.${i}.items`} defaultValue={g.items} className="rounded border border-line px-2 py-1" aria-label="Skills" />
+                <div key={i} className="mt-2">
+                  <div className="grid grid-cols-[8rem_1fr] gap-2">
+                    <input name={`skills.${i}.group`} defaultValue={g.group} className="rounded border border-line px-2 py-1" aria-label="Skill group" />
+                    <input name={`skills.${i}.items`} defaultValue={g.items} className="rounded border border-line px-2 py-1" aria-label="Skills" />
+                  </div>
+                  <Flags flags={termFlags(g.items)} />
                 </div>
               ))}
               <label className="mt-3 block font-medium">
                 Certifications <span className="font-normal text-slate">(optional)</span>
                 <input name="certifications" defaultValue={draft.certifications ?? ""} className={field} />
               </label>
+              {draft.certifications ? <Flags flags={termFlags(draft.certifications)} /> : null}
             </section>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button className={ghost}>Save edits</button>
+              <button formAction={savePdf.bind(null, ctx.ownerStr)} className={button}>
+                Save PDF
+              </button>
+              <span className="text-[13px] text-slate">Save PDF keeps your edits and stores the designed and ATS versions.</span>
             </div>
-          </form>
-
-          <form action={savePdf.bind(null, ctx.ownerStr)} className="mt-3">
-            <button className={button}>Save PDF</button>
-            <span className="ml-3 text-[13px] text-slate">Saves the designed and ATS versions. Save edits first.</span>
           </form>
 
           {draft.gaps.length > 0 && (

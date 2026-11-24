@@ -49,12 +49,21 @@ export async function addExperience(e: Omit<ExperienceEntry, "id" | "createdAt">
   return entry;
 }
 
-/** Markdown lines numbered E1..En, the ids tailored drafts cite. */
+/**
+ * The id tailored drafts cite for an entry. Derived from the entry's own id, so
+ * it doesn't shift when other entries are added or deleted ("seed-csa" -> "E-csa").
+ */
+export function experienceId(e: Pick<ExperienceEntry, "id">): string {
+  const core = e.id.replace(/^seed-/, "").replace(/[^A-Za-z0-9]/g, "");
+  return `E-${core.length > 16 ? core.slice(0, 8) : core}`; // random UUIDs get shortened
+}
+
+/** Markdown lines with each entry's id, for admin Fit Checks. */
 export function experienceAsContext(entries: ExperienceEntry[]): string {
   return entries
-    .map((e, i) => {
+    .map((e) => {
       const extra = [e.where, e.proof, e.useWhen ? `use when: ${e.useWhen}` : ""].filter(Boolean).join("; ");
-      return `- [E${i + 1}] ${e.what}${extra ? ` (${extra})` : ""}`;
+      return `- [${experienceId(e)}] ${e.what}${extra ? ` (${extra})` : ""}`;
     })
     .join("\n");
 }

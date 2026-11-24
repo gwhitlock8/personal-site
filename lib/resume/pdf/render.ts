@@ -45,10 +45,21 @@ const MAX_TRIMS = 30;
  * number; never a role's last bullet) until the designed PDF fits one page.
  * Dropped lines are listed in `cut` so Gavin can swap one back in.
  */
-export async function fitToOnePage(t: TailoredResume, base: BaseResume): Promise<{ resume: TailoredResume; designed: Buffer; ats: Buffer }> {
+export type Fitted = { resume: TailoredResume; designed: Buffer; ats: Buffer; tooLong: boolean; atsPages: number };
+
+export async function fitToOnePage(t: TailoredResume, base: BaseResume): Promise<Fitted> {
   const resume: TailoredResume = structuredClone(t);
   resume.cut = [...(t.cut ?? [])];
   let designed = await renderPdf(toRenderable(resume, base), "designed");
+  // If it overflows even with one bullet per role, the summary, achievements or
+  // skills are too long: cutting experience bullets can't fix it, so don't.
+  if (pageCount(designed) > 1) {
+    const minimal: TailoredResume = { ...resume, roles: resume.roles.map((r) => ({ ...r, bullets: r.bullets.slice(0, 1) })) };
+    if (pageCount(await renderPdf(toRenderable(minimal, base), "designed")) > 1) {
+      const ats = await renderPdf(toRenderable(resume, base), "ats");
+      return { resume, designed, ats, tooLong: true, atsPages: pageCount(ats) };
+    }
+  }
   for (let i = 0; i < MAX_TRIMS && pageCount(designed) > 1; i++) {
     let pick: { role: number; bullet: number; priority: number } | null = null;
     resume.roles.forEach((role, ri) => {
@@ -65,5 +76,5 @@ export async function fitToOnePage(t: TailoredResume, base: BaseResume): Promise
     designed = await renderPdf(toRenderable(resume, base), "designed");
   }
   const ats = await renderPdf(toRenderable(resume, base), "ats");
-  return { resume, designed, ats };
+  return { resume, designed, ats, tooLong: pageCount(designed) > 1, atsPages: pageCount(ats) };
 }

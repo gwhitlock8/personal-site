@@ -1,4 +1,5 @@
 import { getWatchlist } from "@/lib/admin/job-scan";
+import { requireAdmin } from "@/lib/admin/auth";
 import { boardUrl } from "@/lib/admin/job-sources";
 import { addCompany, removeCompany, toggleFde } from "../../job-actions";
 import { button, field, label } from "../ui";
@@ -6,6 +7,7 @@ import { button, field, label } from "../ui";
 const ATS_NAME = { ashby: "Ashby", greenhouse: "Greenhouse", lever: "Lever" } as const;
 
 export default async function WatchlistPage({ searchParams }: { searchParams: Promise<{ error?: string; tried?: string; added?: string; count?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const list = await getWatchlist();
 

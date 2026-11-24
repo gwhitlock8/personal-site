@@ -7,7 +7,7 @@ import { addExperience } from "@/lib/admin/experience";
 import { RateLimited } from "@/lib/admin/ingest";
 import { getItem, saveItem } from "@/lib/admin/repo";
 import { BASE } from "@/lib/resume/base";
-import { blockedTerms, resumeText } from "@/lib/resume/checks";
+import { resumeBlockedTerms } from "@/lib/resume/checks";
 import { loadOwner, MIN_POSTING, sourcesFor, type OwnerContext } from "@/lib/resume/context";
 import { draftFromForm } from "@/lib/resume/form";
 import { generateDraft, type TailoredResume } from "@/lib/resume/generate";
@@ -48,13 +48,16 @@ export async function saveEdits(ownerStr: string, form: FormData) {
   back(ctx, layout);
 }
 
-export async function savePdf(ownerStr: string) {
+/** Saves the editor's current fields first, so unsaved edits are never lost, then renders and stores both PDFs. */
+export async function savePdf(ownerStr: string, form: FormData) {
   const ctx = await load(ownerStr);
-  const { draft } = await getResume(ctx.owner);
-  if (!draft) back(ctx);
-  const blocked = [...new Set(blockedTerms(resumeText(draft!)))];
+  const { draft: stored } = await getResume(ctx.owner);
+  if (!stored) back(ctx);
+  const draft = form.has("tagline") ? draftFromForm(form, stored!) : stored!;
+  await saveDraft(ctx.owner, draft);
+  const blocked = resumeBlockedTerms(draft);
   if (blocked.length) back(ctx, `?error=blocked&terms=${encodeURIComponent(blocked.join(", "))}`);
-  const fitted = await fitToOnePage(draft!, BASE);
+  const fitted = await fitToOnePage(draft, BASE);
   try {
     const saved = await savePdfs(ctx.owner, { designed: fitted.designed, ats: fitted.ats, company: ctx.company });
     await saveDraft(ctx.owner, fitted.resume);

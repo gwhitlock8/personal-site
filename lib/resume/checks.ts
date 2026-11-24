@@ -1,4 +1,5 @@
 import type { TailoredResume } from "./generate";
+import type { BaseResume } from "./types";
 import type { SourceRef } from "./sources";
 
 // Truth checks run on every line of a tailored resume, after generation and
@@ -31,18 +32,23 @@ function runs(text: string): Set<string> {
   return out;
 }
 
-/** Terms that must never appear: the customer's name, a phone number, or "architect" outside the real job title. */
-export function blockedTerms(text: string): string[] {
+/**
+ * Terms that must never appear: the customer's name, a phone number, or the word
+ * "architect" (not "architecture"). The real job title "AI Solution Architect" is
+ * allowed in bullets, but never in the tagline or summary (allowTitle: false).
+ */
+export function blockedTerms(text: string, opts: { allowTitle?: boolean } = {}): string[] {
   const found: string[] = [];
   if (/american express/i.test(text)) found.push("American Express");
   const amex = text.match(/\bamex\b/i);
   if (amex) found.push(amex[0]);
   if (/(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/.test(text)) found.push("phone number");
-  if (/\barchitect/i.test(text.replace(/AI Solution Architect/g, ""))) found.push("architect");
+  const checked = opts.allowTitle === false ? text : text.replace(/AI Solution Architect/g, "");
+  if (/\barchitects?\b/i.test(checked)) found.push("architect");
   return found;
 }
 
-export function checkLine(line: Line, sources: Map<string, SourceRef>, posting: string): Flag[] {
+export function checkLine(line: Line, sources: Map<string, SourceRef>, posting: string, opts: { allowTitle?: boolean } = {}): Flag[] {
   const flags: Flag[] = [];
   const cited = line.sources.map((id) => sources.get(id));
   const unknown = line.sources.filter((_, i) => !cited[i]);
@@ -63,7 +69,7 @@ export function checkLine(line: Line, sources: Map<string, SourceRef>, posting: 
     if (shared) flags.push({ kind: "copied", detail: `Same wording as the posting: "${shared}"` });
   }
 
-  const blocked = blockedTerms(line.text);
+  const blocked = blockedTerms(line.text, opts);
   if (blocked.length) flags.push({ kind: "blocked", detail: `Remove before saving: ${blocked.join(", ")}` });
   return flags;
 }
@@ -78,4 +84,25 @@ export function resumeText(t: TailoredResume): string {
     ...t.skills.flatMap((g) => [g.group, g.items]),
     t.certifications ?? "",
   ].join("\n");
+}
+
+/** Blocked terms anywhere on the resume; the tagline and summary don't get the job-title exemption. */
+export function resumeBlockedTerms(t: TailoredResume): string[] {
+  const headline = blockedTerms(`${t.tagline}\n${t.summary.text}`, { allowTitle: false });
+  const rest = blockedTerms(resumeText({ ...t, tagline: "", summary: { ...t.summary, text: "" } }));
+  return [...new Set([...headline, ...rest])];
+}
+
+const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").replace(/[.\s]+$/, "").trim();
+
+/**
+ * Skill or certification items (comma or semicolon separated; commas inside
+ * parentheses don't split) that appear nowhere in his skills or sources.
+ */
+export function untracedTerms(text: string, sources: SourceRef[], base: BaseResume): string[] {
+  const haystack = norm([...base.skills.map((g) => `${g.group}: ${g.items}`), ...sources.map((s) => s.text)].join("\n"));
+  return text
+    .split(/[,;](?![^()]*\))/)
+    .map((x) => x.trim())
+    .filter((x) => x && !haystack.includes(norm(x)));
 }

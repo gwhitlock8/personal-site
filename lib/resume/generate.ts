@@ -68,8 +68,11 @@ export function mergeDraft(raw: RawDraft, base: BaseResume): TailoredResume {
   };
 }
 
+/** Tailoring runs inside a 60-second Vercel function: one attempt, stopped well before the limit. */
+export const TAILOR_MODEL = { timeoutMs: 45_000, maxRetries: 0 };
+
 const kimiRun = async (prompt: string): Promise<unknown> => {
-  const model = kimi().withStructuredOutput(DraftSchema, { name: "tailored_resume", method: "jsonSchema", strict: true });
+  const model = kimi(undefined, TAILOR_MODEL).withStructuredOutput(DraftSchema, { name: "tailored_resume", method: "jsonSchema", strict: true });
   return model.invoke([
     ["system", RESUME_SYSTEM],
     ["human", prompt],

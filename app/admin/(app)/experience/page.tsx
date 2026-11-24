@@ -1,10 +1,12 @@
-import { listExperience } from "@/lib/admin/experience";
+import { experienceId, listExperience } from "@/lib/admin/experience";
+import { requireAdmin } from "@/lib/admin/auth";
 import { addEntry, deleteEntry, updateEntry } from "../../experience-actions";
 import { button, field, ghost, label } from "../ui";
 
 const WHERE = ["DevRev", "ServiceNow", "LogicMonitor", "ClearDATA", "Earlier roles", "certification", "general"];
 
 export default async function ExperiencePage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const entries = await listExperience();
   return (
@@ -43,10 +45,10 @@ export default async function ExperiencePage({ searchParams }: { searchParams: P
       </form>
 
       <ul className="mt-6 space-y-3">
-        {entries.map((e, i) => (
+        {entries.map((e) => (
           <li key={e.id} className="rounded-lg border border-line bg-card p-4">
             <form action={updateEntry.bind(null, e.id)} className="space-y-2">
-              <p className="text-[12px] font-semibold text-slate">E{i + 1}</p>
+              <p className="text-[12px] font-semibold text-slate">{experienceId(e)}</p>
               <textarea name="what" defaultValue={e.what} required maxLength={600} rows={2} className={field} />
               <div className="grid gap-2 sm:grid-cols-3">
                 <input name="where" defaultValue={e.where} required maxLength={80} list="where-options" className={field} aria-label="Where" />

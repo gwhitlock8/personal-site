@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/admin/auth";
 import { lastScanReport, listJobs, needsFit } from "@/lib/admin/job-scan";
 import type { JobMatch } from "@/lib/admin/jobs";
 import { getResumes } from "@/lib/resume/store";
@@ -38,6 +39,7 @@ function ScoreBadge({ job }: { job: JobMatch }) {
 }
 
 export default async function JobsPage({ searchParams }: { searchParams: Promise<{ view?: string; error?: string; scanned?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const view: View = (VIEWS.find((v) => v.id === sp.view)?.id ?? "new") as View;
   const [jobs, report] = await Promise.all([listJobs(), lastScanReport()]);
