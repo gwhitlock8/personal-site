@@ -112,3 +112,18 @@ The search criteria live in `lib/admin/jobs.ts`: Solutions Engineer, Sales Engin
 
 There's nothing to set up. Each Gmail sync calls `/api/admin/jobs/tick`, which scans once a day and then runs a few Fit Checks per call under the same `ADMIN_MODEL_RPM` budget as email. New matches appear in the Digest (Monday's covers the weekend). "Mark applied" turns a match into an Application with the job description and Fit Check attached.
 
+### Tailored resumes
+
+From a Job Match (before you apply) or an Application, **Tailor resume** builds a one-page version of your resume for that posting. It picks and orders true material from:
+
+- **B**: the general resume (`lib/resume/base.ts`). Titles, companies, dates and education always come from here.
+- **S**: career stories, profile and skills (`content/*.md`).
+- **E**: the **Experience bank** (`/admin/experience`): true details too much for the general resume, each with where it's from and an optional "use when". Admin Fit Checks read it too; the public site never does.
+- **N**: the Application's notes, for details specific to that application.
+
+Every line cites its sources. The editor flags lines with no source, numbers that aren't in their sources, and six or more words copied from the posting. Saving is refused while the resume contains a blocked term (the customer's name, a phone number, or "architect" outside the real job title). If a draft runs over one page, the lowest-priority bullets are cut and listed so you can swap one back.
+
+**Save PDF** stores two files: the designed version (`lib/resume/pdf/Designed.tsx`) and a plain one-column ATS version. They're kept in a **private** Vercel Blob store and downloaded through the admin. When you click Mark applied on a Job Match, its tailored resume moves to the new Application.
+
+Setup (once): in Vercel, open the project's **Storage** tab, choose **Create Storage → Blob**, set access to **Private**, and connect it to this project. That adds the Blob credentials; nothing else to configure. To check the PDF template after a change: `npx tsx scripts/render-sample.ts <folder>` writes both versions of the general resume.
+

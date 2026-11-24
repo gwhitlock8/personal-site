@@ -62,6 +62,10 @@ _Avoid_: Suggestion, recommendation, posting
 True details about Gavin's experience that are too much for the general resume, each tied to the role it belongs to. Tailored resumes and admin Fit Checks draw on it; the public site does not.
 _Avoid_: Extra facts, notes, skills list
 
+**Tailored resume**:
+A one-page version of Gavin's resume built for one posting from his own true material, with every line traced to its source. It belongs to a Job Match until he applies, then to the Application.
+_Avoid_: Custom resume, AI resume, resume variant
+
 **Digest**:
 The weekday-morning email summarizing follow-ups due, Proposed Changes to review and new Job Matches.
 _Avoid_: Reminder email, report
