@@ -9,8 +9,8 @@ const muted = "#8a8f96";
 const accent = "#1585e6";
 
 const s = StyleSheet.create({
-  page: { flexDirection: "row", fontFamily: "Roboto", fontSize: 8.6, lineHeight: 1.36, letterSpacing: 0.12, color: ink },
-  main: { width: 386, paddingTop: 23, paddingRight: 21.6, paddingBottom: 17.3, paddingLeft: 28.8 },
+  page: { flexDirection: "row", fontFamily: "Roboto", fontSize: 8.6, lineHeight: 1.36, letterSpacing: 0.12, color: ink, paddingTop: 23, paddingBottom: 18 },
+  main: { width: 386, paddingRight: 21.6, paddingLeft: 28.8 },
   name: { fontFamily: "Bitter", fontSize: 25, letterSpacing: 0.25, lineHeight: 1.05, color: "#3a3a3a" },
   tagline: { color: accent, fontSize: 12.5, marginTop: 3 },
   contact: { flexDirection: "row", flexWrap: "wrap", marginTop: 7, fontSize: 8.4, color: "#444" },
@@ -28,8 +28,11 @@ const s = StyleSheet.create({
   bulletText: { flex: 1 },
   earlierTitle: { flex: 1, color: "#3a3a3a" },
   earlierDate: { color: muted, fontSize: 8.2, marginLeft: 10 },
-  aside: { width: 226, backgroundColor: "#243f5c", color: "#ffffff", borderTopWidth: 12.2, borderTopColor: "#1b2c41", paddingRight: 23, paddingBottom: 21.6, paddingLeft: 21.6 },
-  avatar: { width: 89, height: 89, borderRadius: 44.5, backgroundColor: "#3d5874", marginTop: 15.8, alignSelf: "center", alignItems: "center", justifyContent: "center" },
+  // The sidebar's background is drawn on every page (fixed), so a page that
+  // spills over keeps its margins and the dark column runs full height.
+  asideBg: { position: "absolute", top: 0, right: 0, bottom: 0, width: 226, backgroundColor: "#243f5c", borderTopWidth: 12.2, borderTopColor: "#1b2c41" },
+  aside: { width: 226, color: "#ffffff", paddingRight: 23, paddingLeft: 21.6 },
+  avatar: { width: 89, height: 89, borderRadius: 44.5, backgroundColor: "#3d5874", marginTop: 5, alignSelf: "center", alignItems: "center", justifyContent: "center" },
   avatarText: { fontFamily: "Bitter", fontSize: 30, letterSpacing: 1.2, color: "#ffffff", marginBottom: 8 },
   avatarBar: { position: "absolute", bottom: 17, width: 30, height: 2, borderRadius: 1, backgroundColor: "#5da9f0" },
   asideH2: { fontFamily: "Bitter", fontSize: 12.5, letterSpacing: 0.4, textTransform: "uppercase", color: "#ffffff", borderBottomWidth: 1.2, borderBottomColor: "#ffffff", paddingBottom: 3, marginTop: 14, marginBottom: 6 },
@@ -55,6 +58,7 @@ export function Designed({ r }: { r: RenderResume }) {
   return (
     <Document title={`${r.name} - Resume`} author={r.name}>
       <Page size="LETTER" style={s.page}>
+        <View fixed style={s.asideBg} />
         <View style={s.main}>
           <Text style={s.name}>{r.name.toUpperCase()}</Text>
           <Text style={s.tagline}>{r.tagline}</Text>
@@ -110,7 +114,7 @@ export function Designed({ r }: { r: RenderResume }) {
 
           <Text style={[s.asideH2, { marginTop: 20 }]}>Key Achievements</Text>
           {r.achievements.map((a) => (
-            <View key={a.title} style={s.ach}>
+            <View key={a.title} style={s.ach} wrap={false}>
               <Text style={s.achTitle}>{a.title}</Text>
               <Text style={s.achText}>{a.text}</Text>
             </View>
@@ -118,7 +122,7 @@ export function Designed({ r }: { r: RenderResume }) {
 
           <Text style={s.asideH2}>Education</Text>
           {r.education.map((e) => (
-            <View key={e.degree} style={s.edu}>
+            <View key={e.degree} style={s.edu} wrap={false}>
               <Text style={s.eduTitle}>{e.degree}</Text>
               <Text style={s.eduSchool}>{e.school}</Text>
               <View style={s.eduMeta}>
@@ -136,7 +140,7 @@ export function Designed({ r }: { r: RenderResume }) {
 
           <Text style={s.asideH2}>Skills</Text>
           {r.skills.map((g, i) => (
-            <View key={g.group}>
+            <View key={g.group} wrap={false}>
               <Text style={[s.skillGroup, i === 0 ? { marginTop: 0 } : {}]}>{g.group}</Text>
               <Text style={s.skillItems}>{g.items}</Text>
             </View>

@@ -39,6 +39,7 @@ export function pageCount(pdf: Buffer): number {
 }
 
 const MAX_TRIMS = 30;
+const MIN_SKILL_GROUPS = 3;
 
 /**
  * Renders both layouts, dropping the lowest-priority bullet (highest priority
@@ -51,13 +52,28 @@ export async function fitToOnePage(t: TailoredResume, base: BaseResume): Promise
   const resume: TailoredResume = structuredClone(t);
   resume.cut = [...(t.cut ?? [])];
   let designed = await renderPdf(toRenderable(resume, base), "designed");
-  // If it overflows even with one bullet per role, the summary, achievements or
-  // skills are too long: cutting experience bullets can't fix it, so don't.
+  // If it overflows even with one bullet per role, the sidebar or summary is the
+  // problem. Drop the least relevant skill groups (the model lists them most
+  // relevant first; keep at least MIN_SKILL_GROUPS). If even that can't make it
+  // fit, cut nothing: cutting experience bullets can't fix it either.
   if (pageCount(designed) > 1) {
-    const minimal: TailoredResume = { ...resume, roles: resume.roles.map((r) => ({ ...r, bullets: r.bullets.slice(0, 1) })) };
-    if (pageCount(await renderPdf(toRenderable(minimal, base), "designed")) > 1) {
-      const ats = await renderPdf(toRenderable(resume, base), "ats");
-      return { resume, designed, ats, tooLong: true, atsPages: pageCount(ats) };
+    const minimalFits = async (r: TailoredResume) =>
+      pageCount(await renderPdf(toRenderable({ ...r, roles: r.roles.map((x) => ({ ...x, bullets: x.bullets.slice(0, 1) })) }, base), "designed")) === 1;
+    if (!(await minimalFits(resume))) {
+      let skills = [...resume.skills];
+      const dropped: string[] = [];
+      while (skills.length > MIN_SKILL_GROUPS) {
+        const g = skills.pop()!;
+        dropped.unshift(`Skills: ${g.group} (${g.items})`);
+        if (await minimalFits({ ...resume, skills })) break;
+      }
+      if (!(await minimalFits({ ...resume, skills }))) {
+        const ats = await renderPdf(toRenderable(resume, base), "ats");
+        return { resume, designed, ats, tooLong: true, atsPages: pageCount(ats) };
+      }
+      resume.skills = skills;
+      resume.cut.push(...dropped);
+      designed = await renderPdf(toRenderable(resume, base), "designed");
     }
   }
   for (let i = 0; i < MAX_TRIMS && pageCount(designed) > 1; i++) {

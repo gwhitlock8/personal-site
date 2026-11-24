@@ -379,6 +379,27 @@ ok("review: fitToOnePage reports ATS pages", () => {
   assert.equal(fitted.tooLong, false);
 });
 
+const crowded = fromBase();
+crowded.skills = [
+  { group: "Presales", items: "Technical discovery, custom demos, POCs, architecture workshops, proof-of-value evaluations, MEDDPICC" },
+  { group: "Integrations", items: "Microsoft Entra (SSO, OAuth), Microsoft Teams, Slack, Salesforce, HubSpot, Gong, APIs" },
+  { group: "Cloud", items: "AWS (EKS, EC2), Azure, GCP, Terraform, hybrid infrastructure monitoring" },
+  { group: "AI", items: "AI agents, LLM integrations, AI prototyping, Now Assist, Moveworks" },
+  { group: "Platforms", items: "ServiceNow (ITOM, ITSM, SPM), DevRev, LogicMonitor, Jira" },
+  { group: "Development", items: "JavaScript, TypeScript, Node.js, Ruby on Rails, React, Groovy, PostgreSQL, Git, Claude Code, Codex" },
+];
+crowded.certifications = "Certified ServiceNow Administrator (CSA)";
+const crowdedFit = await pdf.fitToOnePage(crowded, BASE);
+ok("sidebar overflow drops the least relevant skill groups to fit one page", () => {
+  assert.equal(pdf.pageCount(crowdedFit.designed), 1);
+  assert.equal(crowdedFit.tooLong, false);
+  const dropped = crowdedFit.resume.cut!.filter((c) => c.startsWith("Skills: "));
+  assert.ok(dropped.length > 0, JSON.stringify(crowdedFit.resume.cut));
+  assert.ok(crowdedFit.resume.skills.length >= 3);
+  assert.deepEqual(crowdedFit.resume.skills.map((g) => g.group), crowded.skills.slice(0, crowdedFit.resume.skills.length).map((g) => g.group)); // trimmed from the end
+  assert.equal(crowdedFit.resume.certifications, crowded.certifications);
+});
+
 const { kimi } = await import("../lib/model");
 process.env.MOONSHOT_API_KEY ??= "test-key";
 ok("review: tailoring's model call stops before Vercel's 60-second limit", () => {
