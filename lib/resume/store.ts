@@ -37,6 +37,13 @@ export async function getResume(o: Owner): Promise<ResumeRecord> {
   return raw ? (JSON.parse(raw) as ResumeRecord) : { saved: [] };
 }
 
+/** Records for several owners in one read (for the Job Matches list). */
+export async function getResumes(owners: Owner[]): Promise<ResumeRecord[]> {
+  if (!owners.length) return [];
+  const raw = await adminDb().mget(owners.map(key));
+  return raw.map((r) => (r ? (JSON.parse(r) as ResumeRecord) : { saved: [] }));
+}
+
 async function putRecord(o: Owner, r: ResumeRecord) {
   await adminDb().set(key(o), JSON.stringify(r));
 }

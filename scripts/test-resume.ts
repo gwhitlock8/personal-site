@@ -57,6 +57,12 @@ ok("checks: numbers must appear in sources", () => {
   const deal: SourceRef = { id: "B-lm-se-1", text: "Closed $150K+ in new business" };
   assert.deepEqual(checkLine({ text: "Closed $150K+ while ramping", sources: [deal.id] }, srcMap([deal]), ""), []);
 });
+ok("checks: a year followed by a word is not read as a suffix", () => {
+  const src: SourceRef = { id: "B-sn-asc-1", text: "Quota attainment: 112% (2025, managing the territory on my own for half the year), 135% (2024), 3x growth, $1.5M pipeline" };
+  assert.deepEqual(checkLine({ text: "Quota attainment: 112% (2025), 135% (2024)", sources: [src.id] }, srcMap([src]), ""), []);
+  assert.deepEqual(checkLine({ text: "Grew pipeline to $1.5M, 3x growth", sources: [src.id] }, srcMap([src]), ""), []);
+  assert.deepEqual(checkLine({ text: "Grew pipeline to $2M", sources: [src.id] }, srcMap([src]), "").map((f) => f.kind), ["number"]);
+});
 ok("copy check ignores short overlaps and punctuation", () => {
   const s1: SourceRef = { id: "S1", text: "Runs discovery and builds demos; owns the technical win with account executives" };
   const posting = "You will run discovery, build demos. You'll OWN the technical win, with Account Executives, across the region.";
@@ -269,5 +275,48 @@ ok("savePdfs records both files", () => {
   assert.equal(withSaved.draft!.tagline, BASE.tagline);
 });
 delete process.env.BLOB_READ_WRITE_TOKEN;
+
+// ---- Task 7: editor form ----
+const { draftFromForm } = await import("../lib/resume/form");
+const prev = fromBase();
+prev.emphasis = "Led with AI.";
+prev.gaps = ["Go"];
+prev.cut = ["old line"];
+const f = new FormData();
+f.set("tagline", "Solutions Engineer | AI Agents");
+f.set("summary.text", "New summary.");
+f.set("summary.sources", "B-summary, E1");
+f.set("role.devrev.0.text", "First DevRev bullet");
+f.set("role.devrev.0.sources", "B-devrev-1");
+f.set("role.devrev.0.order", "2");
+f.set("role.devrev.1.text", "Second DevRev bullet");
+f.set("role.devrev.1.sources", "B-devrev-2");
+f.set("role.devrev.1.order", "1");
+f.set("role.devrev.2.text", "   "); // emptied -> removed
+f.set("role.devrev.2.sources", "B-devrev-3");
+f.set("role.devrev.new", "A bullet I typed");
+f.set("ach.0.title", "Big deal");
+f.set("ach.0.text", "Won it.");
+f.set("ach.0.sources", "B-ach-1");
+f.set("skills.0.group", "AI");
+f.set("skills.0.items", "Agents");
+f.set("certifications", "");
+const edited = draftFromForm(f, prev);
+ok("editor form rebuilds the draft", () => {
+  assert.equal(edited.tagline, "Solutions Engineer | AI Agents");
+  assert.deepEqual(edited.summary, { text: "New summary.", sources: ["B-summary", "E1"] });
+  const devrev = edited.roles.find((r) => r.roleId === "devrev")!;
+  assert.deepEqual(devrev.bullets.map((b) => b.text), ["Second DevRev bullet", "First DevRev bullet", "A bullet I typed"]);
+  assert.deepEqual(devrev.bullets[2].sources, []); // typed by hand: flagged "no source"
+  assert.deepEqual(devrev.bullets.map((b) => b.priority), [1, 2, 3]);
+  assert.equal(edited.roles.length, 5); // roles missing from the form keep their bullets
+  assert.equal(edited.roles[1].bullets.length, prev.roles[1].bullets.length);
+  assert.deepEqual(edited.achievements, [{ title: "Big deal", text: "Won it.", sources: ["B-ach-1"] }]);
+  assert.deepEqual(edited.skills, [{ group: "AI", items: "Agents" }]);
+  assert.equal(edited.certifications, undefined);
+  assert.equal(edited.emphasis, "Led with AI.");
+  assert.deepEqual(edited.gaps, ["Go"]);
+  assert.deepEqual(edited.cut, []); // cuts are recomputed on the next render
+});
 
 console.log("\nAll resume tests passed.");

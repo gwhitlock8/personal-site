@@ -1,3 +1,4 @@
+import type { TailoredResume } from "./generate";
 import type { SourceRef } from "./sources";
 
 // Truth checks run on every line of a tailored resume, after generation and
@@ -9,7 +10,8 @@ export type Flag = { kind: "no-source" | "unknown-source" | "number" | "copied" 
 
 const COPY_RUN = 6;
 
-const NUMBER = /\$?\d[\d,.]*\s?(%|k|m|x|×)?/gi;
+// A number with an optional %, K, M or x suffix; a letter only counts as a suffix when no word follows it.
+const NUMBER = /\$?\d+(?:[.,]\d+)*(?:\s?(?:%|[kmx×](?![a-z])))?/gi;
 const normNumber = (t: string) => t.toLowerCase().replace(/[,\s+]/g, "").replace(/[.]$/, "");
 const numbersIn = (text: string) => (text.match(NUMBER) ?? []).map(normNumber).filter((n) => /\d/.test(n));
 
@@ -64,4 +66,16 @@ export function checkLine(line: Line, sources: Map<string, SourceRef>, posting: 
   const blocked = blockedTerms(line.text);
   if (blocked.length) flags.push({ kind: "blocked", detail: `Remove before saving: ${blocked.join(", ")}` });
   return flags;
+}
+
+/** All text that ends up on the resume, for the blocked-terms check before saving. */
+export function resumeText(t: TailoredResume): string {
+  return [
+    t.tagline,
+    t.summary.text,
+    ...t.roles.flatMap((r) => r.bullets.map((b) => b.text)),
+    ...t.achievements.flatMap((a) => [a.title, a.text]),
+    ...t.skills.flatMap((g) => [g.group, g.items]),
+    t.certifications ?? "",
+  ].join("\n");
 }
