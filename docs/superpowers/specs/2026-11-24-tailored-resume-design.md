@@ -1,6 +1,6 @@
 # Phase 6: Tailored resumes
 
-Status: draft for Gavin's approval (2026-11-24)
+Status: approved by Gavin (2026-11-24)
 
 ## Why
 
@@ -10,7 +10,7 @@ Later phases, each designed separately: interview prep from Fit Check gaps, outr
 
 ## Goals
 
-- From an Application, produce a one-page resume tailored to its posting in one click. Gavin reviews and edits it, then saves.
+- Before applying (from a Job Match) or from an Application, produce a one-page resume tailored to the posting in one click. Gavin reviews and edits it, then saves.
 - Every line traces to Gavin's own material. Anything that can't be traced is flagged, not hidden.
 - Keep a growing **Experience bank** of true details that are too much for the general resume, so later resumes and Fit Checks can use them.
 - Save the PDF to Vercel Blob, linked from the Application, and record which version was used.
@@ -107,7 +107,11 @@ A page at `/admin/items/[id]/resume`:
 - the gaps list, with an "Add to Experience bank" box for each
 - a page-fit indicator
 
-The Application page gets a Resume section: "Tailor resume" (or "Edit tailored resume"), plus the saved PDFs with dates.
+Tailoring starts from either place:
+- **Job Match** (before applying): "Tailor resume" uses the posting text the scan already pulled. The editor lives at `/admin/jobs/[key]/resume`. When Gavin clicks "Mark applied", the draft and saved PDFs move to the new Application.
+- **Application** (roles that didn't come through Job Matches, like a recruiter or a referral): add the Application with its job description, then tailor from its Resume section.
+
+The Application page gets a Resume section: "Tailor resume" (or "Edit tailored resume"), plus the saved PDFs with dates. Job Match cards get a "Tailor resume" button and show when a tailored resume is saved.
 
 ### 7. One page
 
@@ -123,7 +127,7 @@ Before building on the template, a side-by-side check against the current PDF.
 
 ### 9. Storage
 
-- Drafts: in the admin database (`resume:<applicationId>`), latest draft only.
+- Drafts: in the admin database, keyed by owner (`resume:app:<applicationId>` or `resume:job:<jobKey>`), latest draft only. Mark applied re-keys a Job Match's draft and saved files to the new Application.
 - Saved PDFs: in Vercel Blob, under random, unguessable paths, linked only from the admin.
   - Prefer private access if the Blob store supports it, served through an admin-only route. Otherwise use public blobs with random paths. The PDF holds only what's already public on the site (no phone).
 - Each save is listed on the Application, with date and file names.
@@ -156,4 +160,4 @@ Before building on the template, a side-by-side check against the current PDF.
 - Each tailored resume produces both the designed and the ATS PDF.
 - Over-one-page drafts are trimmed automatically by priority, rather than shrinking text.
 - Truth flags warn but don't block, except the blocked terms.
-- Tailoring needs a job description of at least 200 characters. Applications without one (for example, those created from email) show "Paste the job description to tailor".
+- Tailoring needs a job description of at least 200 characters (agency-board Job Matches usually don't have one: paste it, or add the Application with it). Applications without one (for example, those created from email) show "Paste the job description to tailor".
