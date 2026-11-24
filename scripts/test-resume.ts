@@ -203,4 +203,71 @@ ok("renders special characters", () => {
   assert.equal(pdf.pageCount(sp.designed), 1);
 });
 
+// ---- Task 6: drafts, saved files and Blob ----
+const store = await import("../lib/resume/store");
+const appOwner = { kind: "app", id: "app-1" } as const;
+const jobOwner = { kind: "job", key: "ashby:abc" } as const;
+await store.saveDraft(jobOwner, fromBase());
+const jobRec = await store.getResume(jobOwner);
+const emptyRec = await store.getResume(appOwner);
+ok("store: draft round trip per owner", () => {
+  assert.equal(jobRec.draft!.tagline, BASE.tagline);
+  assert.deepEqual(jobRec.saved, []);
+  assert.equal(emptyRec.draft, undefined);
+});
+ok("store: parseOwner", () => {
+  assert.deepEqual(store.parseOwner("app:app-1"), appOwner);
+  assert.deepEqual(store.parseOwner("job:ashby:abc"), jobOwner);
+  assert.equal(store.parseOwner("bad"), null);
+  assert.equal(store.ownerString(jobOwner), "job:ashby:abc");
+});
+
+await store.moveOwner(jobOwner, appOwner);
+const movedApp = await store.getResume(appOwner);
+const movedJob = await store.getResume(jobOwner);
+await store.moveOwner(jobOwner, appOwner); // second move: no-op
+const afterSecond = await store.getResume(appOwner);
+ok("moveOwner", () => {
+  assert.equal(movedApp.draft!.tagline, BASE.tagline);
+  assert.equal(movedJob.draft, undefined);
+  assert.equal(afterSecond.draft!.tagline, BASE.tagline); // empty source leaves the target untouched
+});
+
+delete process.env.BLOB_READ_WRITE_TOKEN;
+delete process.env.BLOB_STORE_ID;
+let notConfigured: unknown;
+try {
+  await store.savePdfs(appOwner, { designed: Buffer.from("%PDF"), ats: Buffer.from("%PDF"), company: "Rox" });
+} catch (e) {
+  notConfigured = e;
+}
+const unchanged = await store.getResume(appOwner);
+ok("save without BLOB token", () => {
+  assert.ok(notConfigured instanceof store.BlobNotConfigured, String(notConfigured));
+  assert.deepEqual(unchanged.saved, []);
+});
+
+process.env.BLOB_READ_WRITE_TOKEN = "test-token";
+const puts: { path: string; opts: Record<string, unknown> }[] = [];
+const saved = await store.savePdfs(
+  appOwner,
+  { designed: Buffer.from("%PDF-d"), ats: Buffer.from("%PDF-a"), company: "Rox Data Corp" },
+  async (path, _body, opts) => {
+    puts.push({ path, opts });
+    return { url: `https://store.private.blob.vercel-storage.com/${path}-x1`, pathname: `${path}-x1` };
+  },
+);
+const withSaved = await store.getResume(appOwner);
+ok("savePdfs records both files", () => {
+  const day = new Date().toISOString().slice(0, 10);
+  assert.equal(saved.fileBase, `Gavin-Whitlock-Resume-Rox-Data-Corp-${day}`);
+  assert.ok(saved.designedUrl.includes(`resumes/${saved.fileBase}.pdf`));
+  assert.ok(saved.atsUrl.includes(`resumes/${saved.fileBase}-ATS.pdf`));
+  assert.equal(puts[0].opts.access, "private");
+  assert.equal(puts[0].opts.addRandomSuffix, true);
+  assert.equal(withSaved.saved.length, 1);
+  assert.equal(withSaved.draft!.tagline, BASE.tagline);
+});
+delete process.env.BLOB_READ_WRITE_TOKEN;
+
 console.log("\nAll resume tests passed.");
