@@ -160,4 +160,47 @@ try {
 ok("budget exhausted leaves draft", () => assert.ok(limited instanceof RateLimited, String(limited)));
 process.env.ADMIN_MODEL_RPM = "1000";
 
+// ---- Task 5: PDF rendering and one-page fit ----
+const pdf = await import("../lib/resume/pdf/render");
+type TR = import("../lib/resume/generate").TailoredResume;
+const fromBase = (): TR => ({
+  tagline: BASE.tagline,
+  summary: { text: BASE.summary.text, sources: [BASE.summary.id] },
+  roles: BASE.roles.map((r) => ({ roleId: r.id, bullets: r.bullets.map((b, i) => ({ text: b.text, sources: [b.id], priority: i + 1 })) })),
+  achievements: BASE.achievements.map((a) => ({ title: a.title, text: a.text, sources: [a.id] })),
+  skills: BASE.skills,
+  emphasis: "",
+  gaps: [],
+});
+
+const baseDesigned = await pdf.renderPdf(pdf.toRenderable(fromBase(), BASE), "designed");
+const baseAts = await pdf.renderPdf(pdf.toRenderable(fromBase(), BASE), "ats");
+ok("base renders to one page", () => {
+  assert.equal(pdf.pageCount(baseDesigned), 1);
+  assert.ok(pdf.pageCount(baseAts) <= 2); // the current ATS version already spills a few lines to page 2
+});
+
+const long = fromBase();
+long.roles[0].bullets = Array.from({ length: 12 }, (_, i) => ({
+  text: `Built a long and detailed demo environment number ${i} that walks through discovery, integrations, data and the business case for the buyer`,
+  sources: ["B-devrev-1"],
+  priority: i + 1,
+}));
+const fitted = await pdf.fitToOnePage(long, BASE);
+ok("overlong is trimmed", () => {
+  assert.equal(pdf.pageCount(fitted.designed), 1);
+  assert.ok((fitted.resume.cut ?? []).length > 0);
+  assert.ok(fitted.resume.roles.every((r) => r.bullets.length >= 1));
+  assert.ok(fitted.resume.cut!.every((t) => !fitted.resume.roles[0].bullets.some((b) => b.text === t)));
+});
+
+const special = fromBase();
+special.roles[0].bullets[0] = { text: "R&D <beta> “quotes” – en dash https://example.com/a/very/long/path/that/keeps/going/and/going", sources: ["B-devrev-1"], priority: 1 };
+const sp = await pdf.fitToOnePage(special, BASE);
+ok("renders special characters", () => {
+  assert.equal(sp.designed.subarray(0, 4).toString(), "%PDF");
+  assert.equal(sp.ats.subarray(0, 4).toString(), "%PDF");
+  assert.equal(pdf.pageCount(sp.designed), 1);
+});
+
 console.log("\nAll resume tests passed.");

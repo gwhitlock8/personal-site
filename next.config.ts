@@ -7,8 +7,12 @@ const nextConfig: NextConfig = {
     "/api/chat": ["./content/**/*"],
     "/api/fit": ["./content/**/*"],
     // Server actions on admin pages run the Fit Check, which reads /content.
-    "/admin/**": ["./content/**/*"],
+    // Admin pages also render resume PDFs, which need the font files.
+    "/admin/**": ["./content/**/*", "./lib/resume/fonts/**/*"],
+    "/api/admin/**": ["./content/**/*", "./lib/resume/fonts/**/*"],
   },
+  // The PDF renderer loads fonts and its layout engine at runtime; keep it out of the bundle.
+  serverExternalPackages: ["@react-pdf/renderer"],
   // Keep the admin area out of search engines.
   async headers() {
     return [{ source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }];
