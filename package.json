@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "tsx scripts/test-retrieval.ts && tsx scripts/test-admin.ts && tsx scripts/test-jobs.ts",
+    "test": "tsx scripts/test-retrieval.ts && tsx scripts/test-admin.ts && tsx scripts/test-jobs.ts && tsx scripts/test-resume.ts",
     "ask": "tsx --env-file=.env.local scripts/ask.ts",
     "admin:setup": "tsx scripts/admin-setup.ts",
     "admin:ingest-secret": "tsx scripts/admin-ingest-secret.ts"
