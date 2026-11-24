@@ -90,4 +90,74 @@ ok("sources: ids and notes", () => {
   assert.equal(list.find((x) => x.id === "N2")!.text, "b");
 });
 
+// ---- Task 4: draft generation ----
+const gen = await import("../lib/resume/generate");
+const { RateLimited } = await import("../lib/admin/ingest");
+const repo = await import("../lib/admin/repo");
+const { adminDb } = await import("../lib/admin/db");
+const rawDraft = (over: Record<string, unknown> = {}) => ({
+  tagline: "Presales AI",
+  summary: { text: "Solutions engineer who builds AI demos.", sources: ["B-summary"] },
+  roles: [
+    { roleId: "devrev", bullets: [{ text: "Built Teams and Slack integrations", sources: ["B-devrev-3"], priority: 1 }] },
+    { roleId: "foo", bullets: [{ text: "Invented role", sources: [], priority: 1 }] },
+    { roleId: "sn-asc", bullets: [] },
+  ],
+  achievements: [{ title: "Eight-figure AI deal", text: "Led the POC.", sources: ["B-ach-1"] }],
+  skills: [{ group: "AI", items: "AI agents" }],
+  certifications: "",
+  emphasis: "Led with AI demos.",
+  gaps: ["Go"],
+  ...over,
+});
+
+ok("mergeDraft fills missing roles", () => {
+  const t = gen.mergeDraft(rawDraft(), BASE);
+  assert.deepEqual(t.roles.map((r) => r.roleId), ["devrev", "sn-ai", "sn-asc", "lm-se", "lm-csm"]);
+  assert.deepEqual(t.roles.find((r) => r.roleId === "sn-ai")!.bullets.map((b) => b.sources), [["B-sn-ai-1"]]);
+  assert.deepEqual(t.roles.find((r) => r.roleId === "sn-asc")!.bullets[0].sources, ["B-sn-asc-1"]); // empty -> fallback
+  assert.equal(t.roles.find((r) => r.roleId === "devrev")!.bullets[0].text, "Built Teams and Slack integrations");
+  assert.equal(t.certifications, undefined);
+});
+ok("mergeDraft forces tagline", () => {
+  assert.equal(gen.mergeDraft(rawDraft(), BASE).tagline, "Solutions Engineer | Presales AI");
+  assert.equal(gen.mergeDraft(rawDraft({ tagline: "Solutions Engineer | Presales AI" }), BASE).tagline, "Solutions Engineer | Presales AI");
+  const arch = gen.mergeDraft(rawDraft({ tagline: "AI Architect" }), BASE).tagline;
+  assert.equal(arch, "Solutions Engineer | AI Architect");
+  assert.deepEqual(blockedTerms(arch), ["architect"]);
+});
+
+ok("mergeDraft caps bullets at five per role", () => {
+  const many = Array.from({ length: 7 }, (_, i) => ({ text: `Bullet ${i}`, sources: ["B-devrev-1"], priority: i + 1 }));
+  const t = gen.mergeDraft(rawDraft({ roles: [{ roleId: "devrev", bullets: many }] }), BASE);
+  assert.equal(t.roles[0].bullets.length, 5);
+  assert.equal(t.roles[0].bullets[4].text, "Bullet 4");
+});
+
+let seenPrompt = "";
+const drafted = await gen.generateDraft(
+  { posting: "We need a Solutions Engineer for AI agents. ".repeat(6), sources: [{ id: "E1", text: "Certified ServiceNow Administrator (CSA)." }] },
+  async (prompt) => {
+    seenPrompt = prompt;
+    return rawDraft();
+  },
+);
+ok("generateDraft passes sources and posting", () => {
+  assert.ok(seenPrompt.includes("[E1] Certified ServiceNow Administrator (CSA)."));
+  assert.ok(seenPrompt.includes("We need a Solutions Engineer for AI agents."));
+  assert.equal(drafted.roles.length, 5);
+});
+
+process.env.ADMIN_MODEL_RPM = "1";
+await adminDb().del(`model-budget:${Math.floor(Date.now() / 60_000)}`);
+await repo.takeModelBudget();
+let limited: unknown;
+try {
+  await gen.generateDraft({ posting: "x".repeat(300), sources: [] }, async () => rawDraft());
+} catch (e) {
+  limited = e;
+}
+ok("budget exhausted leaves draft", () => assert.ok(limited instanceof RateLimited, String(limited)));
+process.env.ADMIN_MODEL_RPM = "1000";
+
 console.log("\nAll resume tests passed.");
