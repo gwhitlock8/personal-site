@@ -73,7 +73,8 @@ export const FitSchema = z.object({
 });
 export type Fit = z.infer<typeof FitSchema>;
 
-export async function runFit(jd: string): Promise<{ fit: Fit; sources: Source[] }> {
+/** `extra` adds admin-only context (the Experience bank); the public site never passes it. */
+export async function runFit(jd: string, extra?: string): Promise<{ fit: Fit; sources: Source[] }> {
   // The whole knowledge base is small (~3K words), so the fit check reads all of it.
   // Keyword retrieval alone missed relevant sections for long job descriptions and
   // produced false "gaps". Sections are ordered by relevance; the top ones become the chips.
@@ -91,7 +92,7 @@ export async function runFit(jd: string): Promise<{ fit: Fit; sources: Source[] 
 
   const fit = await fitPrompt.pipe(model).invoke({
     profile: await coreProfile(),
-    context: formatDocs(docs),
+    context: extra ? `${formatDocs(docs)}\n\n## Experience bank\n${extra}` : formatDocs(docs),
     jd,
   });
   return { fit, sources: toSources(ranked.slice(0, 6)) };

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { runFit } from "@/lib/chains";
+import { experienceAsContext, listExperience } from "@/lib/admin/experience";
 import { attemptLogin, clientIp, logout, requireAdmin } from "@/lib/admin/auth";
 import { AdminStoreNotConfigured } from "@/lib/admin/db";
 import { addEvent, deleteItem, getItem, getProposal, linkThread, listProposals, newId, removeProposal, saveItem } from "@/lib/admin/repo";
@@ -41,7 +42,7 @@ export async function logoutAction() {
 async function attachFit(app: Application) {
   if (!app.jobDescription || app.jobDescription.length < MIN_JD) return;
   try {
-    const { fit } = await runFit(app.jobDescription);
+    const { fit } = await runFit(app.jobDescription, experienceAsContext(await listExperience()));
     app.fit = fit;
     app.fitCheckedAt = new Date().toISOString();
   } catch (err) {

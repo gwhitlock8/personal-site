@@ -58,6 +58,10 @@ _Avoid_: Feed, source, job site
 An open role found on a Watchlist board or Aggregator that fits Gavin's search criteria: an SE or presales title, individual contributor, in Austin or remote anywhere in the US. Marking it applied creates an Application; one he passes on is marked Not interested. A Job Match whose posting disappears is Closed.
 _Avoid_: Suggestion, recommendation, posting
 
+**Experience bank**:
+True details about Gavin's experience that are too much for the general resume, each tied to the role it belongs to. Tailored resumes and admin Fit Checks draw on it; the public site does not.
+_Avoid_: Extra facts, notes, skills list
+
 **Digest**:
 The weekday-morning email summarizing follow-ups due, Proposed Changes to review and new Job Matches.
 _Avoid_: Reminder email, report

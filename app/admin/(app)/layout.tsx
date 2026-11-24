@@ -36,6 +36,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/watchlist" className="text-slate hover:text-ink">
             Watchlist
           </Link>
+          <Link href="/admin/experience" className="text-slate hover:text-ink">
+            Experience
+          </Link>
           <Link href="/admin/new" className="text-slate hover:text-ink">
             Add
           </Link>

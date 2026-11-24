@@ -19,4 +19,25 @@ ok("base: five roles in order", () => assert.deepEqual(BASE.roles.map((r) => r.i
 ok("base: no phone, no AmEx", () => assert.ok(!/american express|\bamex\b|\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}/i.test(JSON.stringify(BASE))));
 ok("base: tagline", () => assert.equal(BASE.tagline, "Solutions Engineer | AI Solutions"));
 
+// ---- Task 2: Experience bank ----
+process.env.ADMIN_STORE = "memory";
+const exp = await import("../lib/admin/experience");
+const first = await exp.listExperience();
+const second = await exp.listExperience();
+ok("experience: seeds six entries once", () => {
+  assert.equal(first.length, 6);
+  assert.deepEqual(second.map((e) => e.id), first.map((e) => e.id));
+});
+await exp.addExperience({ what: "Built a Postman collection for the API", where: "DevRev" });
+const afterAdd = await exp.listExperience();
+ok("experience: add then list", () => {
+  assert.equal(afterAdd.length, 7);
+  assert.equal(afterAdd[6].what, "Built a Postman collection for the API");
+});
+ok("experience: context lines", () => {
+  const ctx = exp.experienceAsContext(afterAdd);
+  assert.ok(ctx.includes("[E1] Certified ServiceNow Administrator (CSA)"), ctx);
+  assert.ok(ctx.includes("use when: ServiceNow-heavy roles"), ctx);
+});
+
 console.log("\nAll resume tests passed.");
