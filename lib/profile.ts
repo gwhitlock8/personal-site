@@ -45,7 +45,7 @@ export const experience: Role[] = [
     bullets: [
       "Run technical discovery, demos and POCs for large enterprise accounts across TX and LA.",
       "Built POC integrations with Microsoft Entra (wrote the OAuth flow for automatic SSO provisioning), Teams and Slack.",
-      "Built an AI workflow for a fractional CFO firm that turns discovery-call notes into reviewed proposals, cutting a typical two-week turnaround to two hours. They bought DevRev.",
+      "Built an AI workflow that turns a fractional CFO firm's call notes into researched proposals its CPAs review, cutting a two-week turnaround to two hours. The firm bought DevRev.",
       "Built Dia, a command-line tool that stands up a demo-ready DevRev org from a plain-English brief.",
       "Built an AI skill that creates dashboards using DevRev's internal API, working out the API with DevTools and Postman. Built and used MCPs, often from an OpenAPI spec.",
       "Ran partner enablement cycles on the platform and how to sell it.",
@@ -85,7 +85,7 @@ export const experience: Role[] = [
     start: "Oct 2021",
     end: "Jul 2022",
     bullets: [
-      "Closed $150K+ in new business while ramping into the role. Named Rookie Sales Engineer.",
+      "Closed $150K+ in new business while ramping into the role, and earned Rookie Sales Engineer recognition.",
       "Built DataSources that use scripts and protocols (SNMP, NetFlow, Syslog, OTel) to pull infrastructure metrics into a time-series database to trend and act on.",
     ],
   },

@@ -11,7 +11,7 @@ export const BASE: BaseResume = {
   tagline: "Solutions Engineer | AI Solutions",
   summary: {
     id: "B-summary",
-    text: "Solutions Engineer with 10+ years in enterprise software, across presales and customer success. I run technical discovery, build demos and AI prototypes, and have carried quota as an SE and owned renewals as a CSM.",
+    text: "Solutions Engineer with 10+ years of experience in enterprise software across presales and customer success. I run technical discovery, build demos and AI prototypes, and have carried quota as an SE and owned renewals as a CSM.",
   },
   roles: [
     {
@@ -22,8 +22,8 @@ export const BASE: BaseResume = {
       dates: "May 2026 – Present",
       bullets: bullets("devrev", [
         "Run technical discovery, demos and POCs for large enterprise accounts across TX and LA",
-        "Built an AI workflow for a fractional CFO firm that turns discovery-call notes into reviewed proposals, cutting a typical two-week turnaround to two hours. They bought DevRev",
-        "Built Microsoft Teams and Slack integrations; positioned DevRev's AI memory and execution layer",
+        "Built an AI workflow that turns a fractional CFO firm's call notes into researched proposals its CPAs review, cutting a two-week turnaround to two hours. The firm bought DevRev",
+        "Built Microsoft Teams and Slack integrations for POCs",
       ]),
     },
     {
@@ -55,7 +55,7 @@ export const BASE: BaseResume = {
       company: "LogicMonitor",
       location: "Austin, TX",
       dates: "Oct 2021 – Jul 2022",
-      bullets: bullets("lm-se", ["Closed $150K+ in new business while ramping into the role. Named Rookie Sales Engineer"]),
+      bullets: bullets("lm-se", ["Closed $150K+ in new business while ramping into the role, and earned Rookie Sales Engineer recognition"]),
     },
     {
       id: "lm-csm",
@@ -64,7 +64,7 @@ export const BASE: BaseResume = {
       location: "Austin, TX",
       dates: "Jun 2020 – Oct 2021",
       bullets: bullets("lm-csm", [
-        "Managed 17 of the company's largest accounts, 11 of them renewals",
+        "Managed 17 of the company's largest accounts and secured 11 renewals",
         "Wrote custom Groovy DataSources, run by the Collector in the customer's environment, to poll devices for metrics",
       ]),
     },
@@ -77,9 +77,9 @@ export const BASE: BaseResume = {
     { title: "Implementation Associate", company: "athenahealth", dates: "Oct 2013 – Aug 2015" },
   ],
   achievements: [
-    { id: "B-ach-1", title: "POC became a product offering", text: "Built the POC for a large US bank that ServiceNow released as its GCP offering. The product had only supported AWS and Azure." },
-    { id: "B-ach-2", title: "135% and 112% of quota", text: "Exceeded quota at ServiceNow in 2024 and 2025, covering the territory on my own for half of 2025." },
-    { id: "B-ach-3", title: "Net revenue retention above 100%", text: "Zero churn across 17 of LogicMonitor's largest accounts. Grew spend at several of them and exceeded expansion and upsell quota." },
+    { id: "B-ach-1", title: "POC became a product offering", text: "Built the POC for a large US bank that became ServiceNow's GCP offering. It had only supported AWS and Azure." },
+    { id: "B-ach-2", title: "135% and 112% of quota", text: "Exceeded quota at ServiceNow in 2024 and 2025, covering the territory alone for half of 2025." },
+    { id: "B-ach-3", title: "Net revenue retention above 100%", text: "Maintained zero churn across 17 of LogicMonitor's largest accounts, grew spend at several and beat expansion quota." },
     { id: "B-ach-4", title: "3× ServiceNow Belayer Award", text: "Recognized in Q4 2022, Q1 2023 and Q4 2023." },
   ],
   education: [

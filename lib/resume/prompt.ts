@@ -30,7 +30,7 @@ export const VOICE_EXAMPLES: { before: string; after: string }[] = [
   },
   {
     before: "Built an AI proposal workflow that turned discovery-call notes into researched, reviewed proposals - turning what was typically a 2-week turnaround into 2-hours; the customer bought DevRev.",
-    after: "Built an AI workflow for a fractional CFO firm that turns discovery-call notes into reviewed proposals, cutting a typical two-week turnaround to two hours. They bought DevRev.",
+    after: "Built an AI workflow that turns a fractional CFO firm's call notes into researched proposals its CPAs review, cutting a two-week turnaround to two hours. The firm bought DevRev.",
   },
   {
     before: "Built a reusable demo builder that generates a demo narrative with synthetic data shaped like Jira, Salesforce and ServiceNow records, and an AI skill that builds dashboards on DevRev's internal API.",
