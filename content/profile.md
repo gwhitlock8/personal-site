@@ -16,4 +16,4 @@ The fastest way to talk with Gavin is to book a 20-minute call on his calendar: 
 Full Stack Software Engineering Bootcamp, Flatiron School (2019 to 2020). B.S. in Corporate Communication, University of Texas at Austin (2012).
 
 ## Awards
-ServiceNow Belayer Award recipient three times (Q4 2022, Q1 2023, Q4 2023). Rookie Sales Engineer recognition at LogicMonitor. Recognized at ClearDATA for retaining a major enterprise customer.
+ServiceNow Belayer Award recipient three times (Q4 2022, Q1 2023, Q4 2023), a quarterly award for the overlay teammate who gives the best support to the account teams. Rookie Sales Engineer recognition at LogicMonitor. Recognized at ClearDATA for retaining a major enterprise customer.

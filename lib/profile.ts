@@ -31,7 +31,7 @@ export const profile = {
   facts: [
     { value: "135%", label: "Quota attainment at ServiceNow, 2024" },
     { value: ">100%", label: "Net revenue retention as a LogicMonitor CSM, zero churn" },
-    { value: "3", label: "ServiceNow Belayer Awards" },
+    { value: "3", label: "ServiceNow quarterly awards for supporting account teams" },
     { value: "10+ yrs", label: "Enterprise SaaS, presales and customer success" },
   ],
 };

@@ -78,9 +78,9 @@ export const BASE: BaseResume = {
   ],
   achievements: [
     { id: "B-ach-1", title: "POC became a product offering", text: "Built the POC for a large US bank that became ServiceNow's GCP offering. It had only supported AWS and Azure." },
-    { id: "B-ach-2", title: "135% and 112% of quota", text: "Exceeded quota at ServiceNow in 2024 and 2025, covering the territory alone for half of 2025." },
-    { id: "B-ach-3", title: "Net revenue retention above 100%", text: "Maintained zero churn across 17 of LogicMonitor's largest accounts, grew spend at several and beat expansion quota." },
-    { id: "B-ach-4", title: "3× ServiceNow Belayer Award", text: "Recognized in Q4 2022, Q1 2023 and Q4 2023." },
+    { id: "B-ach-2", title: "135% and 112% of quota", text: "Exceeded quota in 2024 and 2025, covering the territory alone for half of 2025." },
+    { id: "B-ach-3", title: "Net revenue retention above 100%", text: "Zero churn across 17 of LogicMonitor's largest accounts. Grew spend at several and beat expansion quota." },
+    { id: "B-ach-4", title: "3× ServiceNow quarterly award", text: "Best support to account teams: Q4 2022, Q1 and Q4 2023." },
   ],
   education: [
     { degree: "Full Stack Software Engineering Bootcamp", school: "Flatiron School", years: "2019 – 2020" },
