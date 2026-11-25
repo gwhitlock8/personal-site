@@ -20,25 +20,25 @@ export type CaseStudy = {
 
 export const caseStudies: CaseStudy[] = [
   {
-    slug: "employee-self-service",
-    context: "ServiceNow · AI Solution Architect",
-    title: "AI employee self-service for a large US credit card issuer",
+    slug: "gcp-deployments",
+    context: "ServiceNow · Advisory Solution Consultant",
+    title: "GCP deployments from ServiceNow for a large US bank",
     summary:
-      "A POC that let employees get answers, complete routine tasks and fix device issues in natural language from Microsoft Teams.",
-    outcome: "Seven-figure deal; the account grew to eight figures",
+      "A POC that let users pick components and services from a custom catalog and deploy them into their GCP project, later released as a product offering.",
+    outcome: "Released as a product offering; it had only supported AWS and Azure",
     problem: [
-      "One of the largest credit card issuers in the US wanted to combine Moveworks and ServiceNow into a single AI self-service experience for its employees.",
-      "From one entry point in Microsoft Teams, employees should be able to ask questions, handle routine tasks and order from the service catalog in natural language, drawing on the company's data and ServiceNow's workflow orchestration.",
+      "ServiceNow's cloud management in ITOM deployed through Terraform to AWS and Azure, but not GCP.",
+      "A large US bank ran its entire cloud footprint on GCP, so it couldn't use the product to deploy.",
     ],
     built: [
-      "Worked with the customer to find the requests employees make most often, then moved those into AI-assisted automated workflows.",
-      "Built a Now Assist POC that answered employee questions and completed tasks for them.",
-      "Integrated the customer's digital employee experience (DEX) tool so the assistant could fix IT issues on an individual employee's own machine. That custom integration was later released on the ServiceNow Store.",
+      "Worked with the bank's engineers on a POC that orchestrated and stood up workflows in GCP, using infrastructure-as-code tools (Terraform) and API connections.",
+      "Built a custom catalog that let the end user choose which components and services were deployed into their GCP project.",
+      "The POC kept an accurate inventory of everything it deployed, tagged the resources appropriately and surfaced opportunities for cost optimization.",
     ],
     result: [
-      "The POC led to a seven-figure deal and took the customer to an eight-figure account with ServiceNow.",
+      "It was eventually released as an offering within the product, which had previously supported only AWS and Azure.",
     ],
-    stack: ["ServiceNow Now Assist", "Moveworks", "Microsoft Teams", "DEX integration"],
+    stack: ["ServiceNow ITOM", "Terraform", "GCP", "Custom service catalog"],
   },
   {
     slug: "proposal-workflow",

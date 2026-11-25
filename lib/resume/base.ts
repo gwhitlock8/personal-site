@@ -33,8 +33,7 @@ export const BASE: BaseResume = {
       location: "Austin, TX",
       dates: "Jan 2026 – May 2026",
       bullets: bullets("sn-ai", [
-        "Ran the POC for a large US credit card issuer, combining Moveworks and ServiceNow for employee self-service in Teams",
-        "Built the Now Assist POC and a DEX integration that fixes device issues. ServiceNow later released it on the Store",
+        "Built a DEX integration that fixes device issues. ServiceNow later released it on the Store",
         "Ran AI discovery workshops with financial services and wealth management firms to find where automation would pay off",
       ]),
     },
@@ -46,7 +45,7 @@ export const BASE: BaseResume = {
       dates: "Jul 2022 – Jan 2026",
       bullets: bullets("sn-asc", [
         "Ran technical sales cycles for financial services accounts, with demos and workshops across ITOM, ITSM, SPM and Enterprise Architecture",
-        "Worked with a large bank's engineers to rewrite Terraform templates and API connections so they could deploy to GCP from ServiceNow",
+        "Built a POC for a large US bank that deployed GCP resources from ServiceNow using Terraform and a catalog where users pick the services they need. It kept a tagged inventory of what it deployed and flagged cost savings",
         "Developed and ran a Knowledge conference lab on discovering and monitoring Kubernetes objects",
       ]),
     },
@@ -78,7 +77,7 @@ export const BASE: BaseResume = {
     { title: "Implementation Associate", company: "athenahealth", dates: "Oct 2013 – Aug 2015" },
   ],
   achievements: [
-    { id: "B-ach-1", title: "Seven-figure AI deal", text: "Ran the POC that helped win a seven-figure deal with a large US credit card issuer and helped take the account to eight figures." },
+    { id: "B-ach-1", title: "POC became a product offering", text: "Built the POC for a large US bank that ServiceNow released as its GCP offering. The product had only supported AWS and Azure." },
     { id: "B-ach-2", title: "135% and 112% of quota", text: "Exceeded quota at ServiceNow in 2024 and 2025, covering the territory on my own for half of 2025." },
     { id: "B-ach-3", title: "Net revenue retention above 100%", text: "Zero churn across 17 of LogicMonitor's largest accounts. Grew spend at several of them and exceeded expansion and upsell quota." },
     { id: "B-ach-4", title: "3× ServiceNow Belayer Award", text: "Recognized in Q4 2022, Q1 2023 and Q4 2023." },

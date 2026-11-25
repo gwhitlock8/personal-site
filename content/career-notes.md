@@ -10,7 +10,9 @@ A good story covers: the situation, what you built or did, what changed.
 At DevRev, Gavin built an AI prototype (a POC) for a fractional CFO firm that wanted to speed up proposals for small and mid-size clients. When notes from a discovery call came in, a workflow parsed them to work out what the prospect needed, researched the company (location, size, headcount), looked through past proposals for similar ones, and used AI to draft a new proposal. The firm's CPAs and fractional CFOs reviewed the draft. Once they approved it, the workflow pulled the prospect's contact details from the CRM and sent the proposal. The customer bought DevRev.
 
 ## Getting ServiceNow to deploy into GCP for a bank
-ServiceNow's cloud management in ITOM deployed through Terraform to AWS and Azure, but not GCP. A large bank Gavin supported ran its entire cloud footprint on GCP. Working with the bank's engineers, he rewrote the Terraform templates and connected the right API endpoints so the bank could run GCP deployments from ServiceNow's cloud management platform.
+ServiceNow's cloud management in ITOM deployed through Terraform to AWS and Azure, but not GCP. A large US bank Gavin supported ran its entire cloud footprint on GCP. Working with the bank's engineers, he built a POC that orchestrated and stood up workflows in GCP, using infrastructure-as-code tools (Terraform) and API connections. He rewrote the Terraform templates and connected the right API endpoints, and built a custom catalog so the end user could choose which components and services were deployed into their GCP project.
+
+The POC kept an accurate inventory of everything it deployed, tagged the resources appropriately, and surfaced opportunities for cost optimization. It was eventually released as an offering within the product, which had previously supported only AWS and Azure.
 
 ## Dia, a command-line demo builder for DevRev
 At DevRev, Gavin built a prospect-agnostic demo builder in about a week. It's a command-line tool called Dia, on GitHub at github.com/gwhitlock8/devrev-implementation-agent. You describe the demo in plain English, for example a support POC for a fictional company with a set of capabilities, tickets and articles, and Claude writes a blueprint. A deterministic planner checks the blueprint and turns it into an ordered list of steps, and an executor runs them against the DevRev API with retries and a resume option. Dia also writes a click-by-click demo narrative and can generate synthetic data, and when the demo is over it deletes everything it created. It ships with blueprints for migrations from Jira, ServiceNow, Zendesk, Freshdesk and HubSpot. The demos show the power of DevRev's AI context layer on data shaped like what companies keep in their systems of record.
@@ -25,7 +27,7 @@ Enablement and training run through Gavin's career. At DevRev, he took part in s
 Gavin has passed customer feedback to product teams throughout his career. In sales engineering, he brings back what he hears from prospects during the sales process. In customer success, post-sale, customers using the product found gaps whose fixes could help them and other customers, and he took those to the product team.
 
 ## Integrations with Microsoft Teams and Slack
-Gavin has built integrations with both Microsoft Teams and Slack, at ServiceNow and at DevRev. At ServiceNow, Microsoft Teams was the single entry point for the AI employee self-service POC he led for a large US credit card issuer.
+Gavin has built integrations with both Microsoft Teams and Slack, at ServiceNow and at DevRev. At ServiceNow, Microsoft Teams was the single entry point for an AI employee self-service POC he built.
 
 ## SSO provisioning through Microsoft Entra
 Gavin has built integrations for POCs with Microsoft Entra, RingCentral and Ignition. For Entra, he wrote the OAuth authentication that let a user request access to a third-party application and have SSO access provisioned automatically. He did not write custom APIs or webhooks for these.
@@ -33,12 +35,8 @@ Gavin has built integrations for POCs with Microsoft Entra, RingCentral and Igni
 ## Moving from customer success into sales engineering
 In 2021 Gavin moved from Senior Enterprise CSM to Sales Engineer at LogicMonitor. As a CSM he managed 17 of the company's largest accounts with net revenue retention above 100% and no churn, which gave him a practical view of what customers need after the deal closes. He closed more than $150K in new business while ramping as an SE.
 
-## His biggest deal: AI employee self-service for a large US credit card issuer
-As an AI Solution Architect at ServiceNow, Gavin led a POC for one of the largest credit card issuers in the US. The company wanted to combine Moveworks and ServiceNow into one AI self-service experience for its employees. From a single entry point in Microsoft Teams, employees would use natural language to get answers, handle routine tasks and order from the service catalog, drawing on the company's data and ServiceNow's workflow orchestration.
-
-Gavin worked with the customer to find the requests employees make most often, moved those into AI-assisted automated workflows, and built a Now Assist POC that answered employee questions and completed tasks for them. He also integrated the customer's digital employee experience (DEX) tool, so the assistant could fix IT issues affecting an individual employee's own machine. That custom integration was later released on the ServiceNow Store.
-
-The POC led to a seven-figure deal and took the customer to an eight-figure account with ServiceNow.
+## A DEX integration released on the ServiceNow Store
+As an AI Solution Architect at ServiceNow, Gavin built a Now Assist POC and integrated a digital employee experience (DEX) tool, so the assistant could fix IT issues affecting an individual employee's own machine. That custom integration was later released on the ServiceNow Store.
 
 ## Why he went to a coding bootcamp (Flatiron School)
 As a customer success manager at ClearDATA, Gavin worked in the AWS and Azure consoles every day and leaned far more technical than other CSMs, but his title didn't show it. He enrolled in Flatiron School's full-stack software engineering bootcamp in 2019 to make those technical skills official on his resume, planning to move into a solution consultant role afterward. At Flatiron he learned full-stack web development, mainly Ruby on Rails, plus React and JavaScript. His bootcamp projects are on his GitHub (github.com/gwhitlock8).

@@ -59,8 +59,8 @@ export const experience: Role[] = [
     start: "Jan 2026",
     end: "May 2026",
     bullets: [
-      "Ran the POC for a large US credit card issuer, combining Moveworks and ServiceNow for employee self-service in Teams. It helped win a seven-figure deal and take the account to eight figures.",
-      "Built the Now Assist POC and a DEX integration that fixes device issues. ServiceNow later released it on the Store.",
+      "Built Now Assist POCs and prototypes demonstrating AI agents and workflow automation.",
+      "Built a DEX integration that fixes device issues. ServiceNow later released it on the Store.",
       "Ran AI discovery workshops with financial services and wealth management firms to find where automation would pay off.",
       "Supported strategic pursuits across wealth management and financial services.",
     ],
@@ -73,7 +73,7 @@ export const experience: Role[] = [
     end: "Jan 2026",
     bullets: [
       "Ran technical sales cycles for financial services accounts, from discovery to technical win, with demos and workshops across ITOM, ITSM, SPM and Enterprise Architecture.",
-      "Worked with a large bank's engineers to rewrite Terraform templates and API connections so they could deploy to GCP from ServiceNow.",
+      "Built a POC for a large US bank that stood up GCP workflows from ServiceNow using Terraform and a custom catalog where users pick the components and services for their GCP project. It kept a tagged inventory of what it deployed and flagged cost savings. ServiceNow later released it as an offering; the product had only supported AWS and Azure.",
       "Developed and ran a lab at ServiceNow's Knowledge conference demonstrating discovery and monitoring of Kubernetes objects.",
       "Quota attainment: 135% (2024), 112% (2025, covering the territory alone for half the year), 101% (2023), 87% (2022 ramp year).",
     ],

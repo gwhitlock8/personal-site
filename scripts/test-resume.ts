@@ -111,7 +111,7 @@ const rawDraft = (over: Record<string, unknown> = {}) => ({
     { roleId: "foo", bullets: [{ text: "Invented role", sources: [], priority: 1 }] },
     { roleId: "sn-asc", bullets: [] },
   ],
-  achievements: [{ title: "Seven-figure AI deal", text: "Led the POC.", sources: ["B-ach-1"] }],
+  achievements: [{ title: "POC became a product offering", text: "Led the POC.", sources: ["B-ach-1"] }],
   skills: [{ group: "AI", items: "AI agents" }],
   certifications: "",
   emphasis: "Led with AI demos.",

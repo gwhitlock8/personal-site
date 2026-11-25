@@ -23,7 +23,7 @@ const cases: [string, string][] = [
   ["customer success renewals churn", "experience"],
   ["What AI prototypes has Gavin built for customers?", "career-notes/An AI prototype"],
   ["Has he deployed to GCP with Terraform?", "career-notes/Getting ServiceNow to deploy into GCP"],
-  ["What's the biggest deal he's helped win?", "career-notes/His biggest deal"],
+  ["Did he build a DEX integration that was released on the ServiceNow Store?", "career-notes/A DEX integration released"],
   ["Has he built integrations with Teams and Slack?", "career-notes/Integrations with Microsoft Teams and Slack"],
   ["Why did he go to Flatiron?", "career-notes/Why he went to a coding bootcamp"],
   ["Does he still code?", "career-notes/How he uses his coding skills now"],

@@ -37,16 +37,12 @@ export const VOICE_EXAMPLES: { before: string; after: string }[] = [
     after: "Built a demo builder that generates a narrative and synthetic Jira-, Salesforce- and ServiceNow-style data for any prospect.",
   },
   {
-    before: "Led an AI employee self-service POC for a large US credit card issuer, combining Moveworks and ServiceNow in Microsoft Teams; it led to a seven-figure deal.",
-    after: "Ran the POC for a large US credit card issuer, combining Moveworks and ServiceNow for employee self-service in Teams.",
-  },
-  {
     before: "Led AI discovery workshops for financial services and wealth management firms to find high-impact automation opportunities.",
     after: "Ran AI discovery workshops with financial services and wealth management firms to find where automation would pay off.",
   },
   {
-    before: "Rewrote Terraform templates and API connections with a large bank's engineers so the bank could run GCP deployments from ServiceNow.",
-    after: "Worked with a large bank's engineers to rewrite Terraform templates and API connections so they could deploy to GCP from ServiceNow.",
+    before: "Orchestrated and leveraged infrastructure-as-code tooling to enable GCP deployments for a large US bank from ServiceNow.",
+    after: "Built a POC for a large US bank that deployed GCP resources from ServiceNow using Terraform and a catalog where users pick the services they need.",
   },
   {
     before: "Designed monitoring solutions spanning hybrid infrastructure and cloud environments.",
@@ -73,7 +69,7 @@ Rules:
 - Put each number or result in only one place: the bullets or the achievements, not both. The achievements carry the headline numbers; the bullets say what he did.
 - Never use these words: ${BANNED_WORDS.join(", ")}, or similar hype.
 - Tagline: only the focus that follows "Solutions Engineer | ", a few words, for example "AI Solutions" or "Presales, AI Agents". Never use the word "architect".
-- Never name American Express; it is "a large US credit card issuer". Never include a phone number.
+- Never name the customers behind the bank or card-issuer stories; say "a large US bank". Never name American Express. Never include a phone number.
 - Roles: for each role id listed, 1 to 5 bullets, each with a priority (1 = keep first; higher numbers are cut first if the page runs long). Use only the role ids listed.
 - Achievements: exactly four, each a short title and one sentence, citing sources.
 - Skills: reorder and trim the skill groups for this posting. Items may only come from the skills listed or from the sources.
