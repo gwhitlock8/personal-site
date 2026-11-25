@@ -1,7 +1,7 @@
 # Skills
 
 ## AI and architecture
-AI solution architecture, LLM integrations, AI agents, AI-powered workflows, AI memory and context layers, ServiceNow Now Assist, enterprise architecture. Gavin prototypes with Claude Code, Cursor and Codex/Copilot. He built this site's assistant with LangChain.js and Kimi K3, an open-weight model from Moonshot AI.
+AI solution architecture, LLM integrations, AI agents, AI-powered workflows, AI memory and context layers, ServiceNow Now Assist, enterprise architecture. Gavin prototypes with Claude Code, Cursor and Codex/Copilot. He built this site's assistant with LangChain.js and Kimi K3 from Moonshot AI.
 
 ## Presales
 Technical discovery, solution demonstrations, POCs, technical and architecture workshops, integrations, strategic and enterprise accounts.
@@ -10,7 +10,7 @@ Technical discovery, solution demonstrations, POCs, technical and architecture w
 ServiceNow (IT Operations Management, IT Service Management, Strategic Portfolio Management), DevRev, LogicMonitor, Salesforce, Jira.
 
 ## Cloud
-AWS (including EKS and EC2), Azure, GCP, and hybrid infrastructure monitoring.
+AWS, Azure, GCP, Terraform, and hybrid infrastructure monitoring.
 
 ## Data and GTM tools
 Hands-on with Snowflake and BigQuery, and with the data services of the major cloud providers. GTM stack: Salesforce, HubSpot, Gong and Granola, which he integrated into DevRev Grow demos and POCs.

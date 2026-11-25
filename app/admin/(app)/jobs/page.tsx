@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/admin/auth";
 import { lastScanReport, listJobs, needsFit } from "@/lib/admin/job-scan";
 import type { JobMatch } from "@/lib/admin/jobs";
+import { getResumes } from "@/lib/resume/store";
 import { dismissJob, fitJobNow, markApplied, restoreJob, scanNow } from "../../job-actions";
 import { ago, button, FitCard, formatDate, ghost } from "../ui";
 
@@ -37,6 +39,7 @@ function ScoreBadge({ job }: { job: JobMatch }) {
 }
 
 export default async function JobsPage({ searchParams }: { searchParams: Promise<{ view?: string; error?: string; scanned?: string }> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const view: View = (VIEWS.find((v) => v.id === sp.view)?.id ?? "new") as View;
   const [jobs, report] = await Promise.all([listJobs(), lastScanReport()]);
@@ -45,6 +48,8 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
     .filter((j) => inView(j, view))
     .sort((a, b) => (view === "new" ? (b.fitScore ?? -1) - (a.fitScore ?? -1) : 0) || b.firstSeen.localeCompare(a.firstSeen));
   const waiting = jobs.filter(needsFit).length;
+  const records = await getResumes(shown.map((j) => ({ kind: "job" as const, key: j.key })));
+  const tailoredFor = new Map(shown.map((j, i) => [j.key, records[i]]));
   const failed = report?.sources.filter((s) => !s.ok) ?? [];
 
   return (
@@ -137,6 +142,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                     <form action={markApplied.bind(null, job.key)}>
                       <button className={button}>Mark applied</button>
                     </form>
+                    <Link href={`/admin/jobs/${encodeURIComponent(job.key)}/resume`} className={ghost}>
+                      {tailoredFor.get(job.key)?.saved.length ? "Tailored resume saved" : tailoredFor.get(job.key)?.draft ? "Edit tailored resume" : "Tailor resume"}
+                    </Link>
                     <form action={dismissJob.bind(null, job.key)}>
                       <button className={ghost}>Not interested</button>
                     </form>

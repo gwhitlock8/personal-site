@@ -5,7 +5,7 @@ import { profile } from "@/lib/profile";
 
 export const metadata: Metadata = {
   title: "How I built the assistant | Gavin Whitlock",
-  description: "Architecture of a RAG assistant built with Next.js, LangChain.js and the open-weight Kimi K3 model.",
+  description: "Architecture of a RAG assistant built with Next.js, LangChain.js and Kimi K3.",
 };
 
 const steps = [
@@ -45,7 +45,7 @@ export default function HowIBuiltThis() {
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-slate">
             The assistant on my homepage is a retrieval-augmented generation (RAG) app. It searches a small set of files
-            about my work, then asks an open-weight model to answer using only what it found. Here is each step and
+            about my work, then asks Kimi K3 to answer using only what it found. Here is each step and
             why I built it that way.
           </p>
         </div>
@@ -82,16 +82,15 @@ export default function HowIBuiltThis() {
           </figcaption>
         </figure>
 
-        <Section title="Why Kimi K3, an open-weight model">
+        <Section title="Why Kimi K3">
           <p>
-            Most assistants like this call a closed model. I wanted to learn what changes with an open-weight one.
-            Moonshot AI publishes Kimi K3's weights on Hugging Face, so the same model could run on my own GPUs with vLLM
-            or SGLang, or on Amazon Bedrock, without rewriting the app.
+            I wanted to learn how a model from a different provider behaves in a real build: its reasoning settings,
+            its API quirks and its cost. K3 is a 2.8-trillion-parameter mixture-of-experts model, far too big to run on
+            Vercel, so I call Moonshot's hosted API.
           </p>
           <p>
-            In practice K3 is a 2.8-trillion-parameter mixture-of-experts model, far too big for Vercel, so I call
-            Moonshot's hosted API. That API is OpenAI-compatible, which means LangChain's standard <code>ChatOpenAI</code>{" "}
-            class works once it points at a different URL:
+            That API is OpenAI-compatible, which means LangChain's standard <code>ChatOpenAI</code> class works once it
+            points at a different URL, and moving to another host later is a change of environment variables, not code:
           </p>
           <Code>{`
 const model = new ChatOpenAI({
@@ -155,7 +154,7 @@ const model = kimi().withStructuredOutput(FitSchema, {
           </p>
           <p>
             Next I plan to move to a LangGraph agent with tools for lead capture and booking time, add an evaluation set
-            of real questions from the chat logs, and compare K3 with other open-weight models through the same
+            of real questions from the chat logs, and compare K3 with other models through the same
             interface.
           </p>
         </Section>

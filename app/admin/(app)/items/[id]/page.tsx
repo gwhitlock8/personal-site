@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getItem, listEvents, listProposals } from "@/lib/admin/repo";
 import Proposals from "../../Proposals";
+import { getResume } from "@/lib/resume/store";
+import { SavedResumes } from "../../resume/SavedResumes";
 import { followUp, STAGES } from "@/lib/admin/pipeline";
 import {
   addNote,
@@ -30,7 +32,7 @@ export default async function ItemPage({ params }: Props) {
   const { id } = await params;
   const item = await getItem(id);
   if (!item) notFound();
-  const [events, allProposals] = await Promise.all([listEvents(id), listProposals()]);
+  const [events, allProposals, tailored] = await Promise.all([listEvents(id), listProposals(), getResume({ kind: "app", id })]);
   const proposals = allProposals.filter((p) => p.itemId === id);
   const f = followUp(item);
   const app = item.kind === "application" ? item : null;
@@ -123,6 +125,22 @@ export default async function ItemPage({ params }: Props) {
             ))}
           </ol>
         </section>
+
+        {app && (
+          <section className="mt-10">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Resume</h2>
+              <Link href={`/admin/items/${id}/resume`} className="text-sm text-slate underline underline-offset-2 hover:text-ink">
+                {tailored.draft ? "Edit tailored resume" : "Tailor resume"}
+              </Link>
+            </div>
+            {tailored.saved.length ? (
+              <SavedResumes ownerStr={`app:${id}`} saved={tailored.saved} back={`/admin/items/${id}`} />
+            ) : (
+              <p className="mt-2 text-sm text-slate">{tailored.draft ? "Draft in progress; no PDF saved yet." : "No tailored resume yet."}</p>
+            )}
+          </section>
+        )}
 
         {app && (
           <section className="mt-10">

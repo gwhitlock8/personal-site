@@ -1,10 +1,10 @@
 # How this site and assistant were built
 
 ## Overview
-Gavin built this site as a working example of the kind of AI prototype he builds for customers. It's a Next.js app deployed on Vercel. The assistant runs on Kimi K3, an open-weight model from Moonshot AI, called through Moonshot's OpenAI-compatible API and orchestrated with LangChain.js. The code is on GitHub at github.com/gwhitlock8.
+Gavin built this site as a working example of the kind of AI prototype he builds for customers. It's a Next.js app deployed on Vercel. The assistant runs on Kimi K3 from Moonshot AI, called through Moonshot's OpenAI-compatible API and orchestrated with LangChain.js. The code is on GitHub at github.com/gwhitlock8. Behind a private login, the same app also runs Gavin's job-search tracker: it reads job-search email from his Gmail, checks new postings against his experience, and drafts tailored one-page resumes in which every line cites the true material it came from.
 
-## Why an open-weight model
-Gavin wanted to learn how open-weight models compare with closed APIs in a real build. Kimi K3's weights are published on Hugging Face, so the same model could be self-hosted later with vLLM or SGLang, or moved to Amazon Bedrock, without rewriting the app. For now it uses Moonshot's hosted API, because a 2.8-trillion-parameter model can't run on Vercel.
+## Why Kimi K3
+Gavin wanted to learn how a model from a different provider behaves in a real build: its reasoning settings, its API quirks and its cost. Kimi K3 is a 2.8-trillion-parameter model that can't run on Vercel, so the app calls Moonshot's hosted API. Because that API is OpenAI-compatible, moving to another host later is a change of environment variables, not code.
 
 ## How a question gets answered
 When you send a message, the browser posts it to a Next.js API route. The route checks a per-visitor rate limit, then runs a LangChain retrieval chain. First a retriever searches Gavin's knowledge files (resume, skills, career notes, references, and this page) and picks the most relevant sections. Then a prompt template combines those sections, a short always-included profile, your recent messages and the persona you picked (recruiter, hiring manager or browsing). Kimi K3 generates the answer, which streams back to the browser token by token. The sections the answer drew on appear as source chips under each reply.

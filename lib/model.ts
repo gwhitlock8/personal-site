@@ -5,7 +5,7 @@ import { ChatOpenAI } from "@langchain/openai";
 // Moonshot's API is OpenAI-compatible, so LangChain's ChatOpenAI class works
 // as-is: point baseURL at Moonshot and pass the Kimi model id. Swapping to
 // another OpenAI-compatible host (OpenRouter, Together, a self-hosted vLLM
-// server running the open weights) is just a change of these env vars.
+// server) is just a change of these env vars.
 //
 // Kimi K3 specifics (platform.kimi.ai docs):
 //  - Thinking mode is always on. `reasoning_effort` is low | high | max
@@ -17,7 +17,7 @@ import { ChatOpenAI } from "@langchain/openai";
 
 export type Effort = "low" | "high" | "max";
 
-export function kimi(effort?: Effort) {
+export function kimi(effort?: Effort, opts: { timeoutMs?: number; maxRetries?: number } = {}) {
   const apiKey = process.env.MOONSHOT_API_KEY;
   if (!apiKey) throw new Error("MOONSHOT_API_KEY is not set. Copy .env.example to .env.local and add your key.");
 
@@ -28,8 +28,8 @@ export function kimi(effort?: Effort) {
       baseURL: process.env.MOONSHOT_BASE_URL ?? "https://api.moonshot.ai/v1",
     },
     streamUsage: false,
-    maxRetries: 1,
-    timeout: 60_000,
+    maxRetries: opts.maxRetries ?? 1,
+    timeout: opts.timeoutMs ?? 60_000,
     modelKwargs: {
       reasoning_effort: effort ?? (process.env.KIMI_REASONING_EFFORT as Effort) ?? "low",
     },

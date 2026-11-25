@@ -9,6 +9,7 @@ import { boardUrl, fetchBoard } from "@/lib/admin/job-sources";
 import { parseBoardInput, type WatchlistCompany } from "@/lib/admin/jobs";
 import { addEvent, newId, saveItem } from "@/lib/admin/repo";
 import type { Application } from "@/lib/admin/pipeline";
+import { getResume, moveOwner } from "@/lib/resume/store";
 
 const refresh = () => revalidatePath("/admin", "layout");
 
@@ -43,6 +44,10 @@ export async function markApplied(key: string) {
     updatedAt: now,
     lastEventAt: now,
   };
+  // A resume tailored before applying moves to the new Application.
+  const tailored = await getResume({ kind: "job", key: job.key });
+  if (tailored.saved.length) app.resumeVersion = `Tailored (${tailored.saved[0].at.slice(0, 10)})`;
+  await moveOwner({ kind: "job", key: job.key }, { kind: "app", id: app.id });
   await saveItem(app);
   await addEvent(app, "created", "Applied (from a Job Match)", job.url);
   job.status = "applied";

@@ -1,5 +1,6 @@
 import { runFit } from "@/lib/chains";
 import { adminDb } from "./db";
+import { experienceAsContext, listExperience } from "./experience";
 import { RateLimited } from "./ingest";
 import { fetchBoard, fetchHnWhoIsHiring, fetchNotionBoard } from "./job-sources";
 import { fitScore, normalizeUrl, postingQualifies, type JobMatch, type Posting, type WatchlistCompany } from "./jobs";
@@ -178,7 +179,7 @@ export async function scanJobs(now = new Date(), fetchers: Fetchers = liveFetche
 
 // ---- Fit Checks ----
 
-export type FitRunner = (jd: string) => Promise<{ fit: JobMatch["fit"] & object }>;
+export type FitRunner = (jd: string, extra?: string) => Promise<{ fit: JobMatch["fit"] & object }>;
 
 /** Runs the Fit Check for one Job Match, held to the shared model budget. */
 export async function fitJob(job: JobMatch, run: FitRunner = runFit): Promise<void> {
@@ -189,7 +190,8 @@ export async function fitJob(job: JobMatch, run: FitRunner = runFit): Promise<vo
   }
   if (!(await takeModelBudget())) throw new RateLimited();
   try {
-    const { fit } = await run(`${job.title} at ${job.company}\nLocation: ${job.locations.join(", ")}\n\n${job.description}`);
+    const extra = experienceAsContext(await listExperience());
+    const { fit } = await run(`${job.title} at ${job.company}\nLocation: ${job.locations.join(", ")}\n\n${job.description}`, extra);
     job.fit = fit;
     job.fitScore = fitScore(fit);
     job.fitCheckedAt = new Date().toISOString();
