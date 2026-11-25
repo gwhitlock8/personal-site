@@ -38,7 +38,7 @@ As an AI Solution Architect at ServiceNow, Gavin led a POC for one of the larges
 
 Gavin worked with the customer to map the requests employees actually make, stack-ranked them by priority, and built a Now Assist POC that answered employee questions and completed tasks for them. He also integrated the customer's digital employee experience (DEX) tool, so the assistant could fix IT issues affecting an individual employee's own machine. That custom integration was later released on the ServiceNow Store.
 
-The POC led to an eight-figure deal and took the customer to a nine-figure account with ServiceNow.
+The POC led to a seven-figure deal and took the customer to an eight-figure account with ServiceNow.
 
 ## Why he went to a coding bootcamp (Flatiron School)
 As a customer success manager at ClearDATA, Gavin worked in the AWS and Azure consoles every day and leaned far more technical than other CSMs, but his title didn't show it. He enrolled in Flatiron School's full-stack software engineering bootcamp in 2019 to make those technical skills official on his resume, planning to move into a solution consultant role afterward. At Flatiron he learned full-stack web development, mainly Ruby on Rails, plus React and JavaScript. His bootcamp projects are on his GitHub (github.com/gwhitlock8).

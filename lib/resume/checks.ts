@@ -1,13 +1,14 @@
 import type { TailoredResume } from "./generate";
 import type { BaseResume } from "./types";
 import type { SourceRef } from "./sources";
+import { BANNED_WORDS } from "./prompt";
 
 // Truth checks run on every line of a tailored resume, after generation and
 // after each edit. Flags warn; blocked terms also stop the PDF from saving.
 
 export type Line = { text: string; sources: string[]; priority?: number };
 
-export type Flag = { kind: "no-source" | "unknown-source" | "number" | "copied" | "blocked"; detail: string };
+export type Flag = { kind: "no-source" | "unknown-source" | "number" | "copied" | "blocked" | "style"; detail: string };
 
 const COPY_RUN = 6;
 
@@ -48,7 +49,24 @@ export function blockedTerms(text: string, opts: { allowTitle?: boolean } = {}):
   return found;
 }
 
-export function checkLine(line: Line, sources: Map<string, SourceRef>, posting: string, opts: { allowTitle?: boolean } = {}): Flag[] {
+const BANNED = new RegExp(`\\b(${BANNED_WORDS.map((w) => w.replace(/[-\s]/g, "[-\\s]")).join("|")})`, "i");
+
+/** Hype words, and (when maxWords is given) lines that run too long. Warnings only. */
+export function styleFlags(text: string, opts: { maxWords?: number } = {}): Flag[] {
+  const flags: Flag[] = [];
+  const hype = text.match(BANNED);
+  if (hype) flags.push({ kind: "style", detail: `Sounds like a template: "${hype[0].toLowerCase()}". Say it plainly.` });
+  const n = words(text).length;
+  if (opts.maxWords && n > opts.maxWords) flags.push({ kind: "style", detail: `${n} words; aim for about 20, 30 at most.` });
+  return flags;
+}
+
+export function checkLine(
+  line: Line,
+  sources: Map<string, SourceRef>,
+  posting: string,
+  opts: { allowTitle?: boolean; maxWords?: number } = {},
+): Flag[] {
   const flags: Flag[] = [];
   const cited = line.sources.map((id) => sources.get(id));
   const unknown = line.sources.filter((_, i) => !cited[i]);
@@ -71,6 +89,7 @@ export function checkLine(line: Line, sources: Map<string, SourceRef>, posting: 
 
   const blocked = blockedTerms(line.text, opts);
   if (blocked.length) flags.push({ kind: "blocked", detail: `Remove before saving: ${blocked.join(", ")}` });
+  flags.push(...styleFlags(line.text, { maxWords: opts.maxWords }));
   return flags;
 }
 

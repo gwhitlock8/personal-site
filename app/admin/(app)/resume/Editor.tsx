@@ -26,6 +26,7 @@ const FLAG_TONE: Record<Flag["kind"], string> = {
   "unknown-source": "bg-amber-50 text-amber-900 ring-amber-200",
   number: "bg-amber-50 text-amber-900 ring-amber-200",
   copied: "bg-amber-50 text-amber-900 ring-amber-200",
+  style: "bg-sky-50 text-sky-900 ring-sky-200",
 };
 
 function Flags({ flags }: { flags: Flag[] }) {
@@ -131,7 +132,7 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
     if (blocked.length) flags.push({ kind: "blocked", detail: `Remove before saving: ${blocked.join(", ")}` });
     return flags;
   };
-  const flagsFor = (line: Line) => checkLine(line, sources, ctx.posting);
+  const flagsFor = (line: Line) => checkLine(line, sources, ctx.posting, { maxWords: 30 });
   const fitted = await fitToOnePage(draft, BASE);
   const pages = pageCount(fitted.designed);
   const preview = `/api/admin/resume/preview?owner=${encodeURIComponent(ctx.ownerStr)}&layout=${layout}&v=${Date.now()}`;
@@ -233,7 +234,7 @@ export async function Editor({ ctx, sp }: { ctx: OwnerContext; sp: { error?: str
                     <Chips ids={a.sources} sources={sources} />
                     <input name={`ach.${i}.sources`} defaultValue={a.sources.join(", ")} className="w-40 rounded border border-line px-1.5 py-0.5 text-[12px]" aria-label="Sources" />
                   </div>
-                  <Flags flags={flagsFor({ text: `${a.title}: ${a.text}`, sources: a.sources })} />
+                  <Flags flags={checkLine({ text: `${a.title}: ${a.text}`, sources: a.sources }, sources, ctx.posting)} />
                 </div>
               ))}
             </section>

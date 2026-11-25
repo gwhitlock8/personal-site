@@ -25,7 +25,7 @@ export const caseStudies: CaseStudy[] = [
     title: "AI employee self-service for a large US credit card issuer",
     summary:
       "A POC that let employees get answers, complete routine tasks and fix device issues in natural language from Microsoft Teams.",
-    outcome: "Eight-figure deal; the account grew to nine figures",
+    outcome: "Seven-figure deal; the account grew to eight figures",
     problem: [
       "One of the largest credit card issuers in the US wanted to combine Moveworks and ServiceNow into a single AI self-service experience for its employees.",
       "From one entry point in Microsoft Teams, employees should be able to ask questions, handle routine tasks and order from the service catalog in natural language, drawing on the company's data and ServiceNow's workflow orchestration.",
@@ -36,7 +36,7 @@ export const caseStudies: CaseStudy[] = [
       "Integrated the customer's digital employee experience (DEX) tool so the assistant could fix IT issues on an individual employee's own machine. That custom integration was later released on the ServiceNow Store.",
     ],
     result: [
-      "The POC led to an eight-figure deal and took the customer to a nine-figure account with ServiceNow.",
+      "The POC led to a seven-figure deal and took the customer to an eight-figure account with ServiceNow.",
     ],
     stack: ["ServiceNow Now Assist", "Moveworks", "Microsoft Teams", "DEX integration"],
   },

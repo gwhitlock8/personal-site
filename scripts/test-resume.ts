@@ -111,7 +111,7 @@ const rawDraft = (over: Record<string, unknown> = {}) => ({
     { roleId: "foo", bullets: [{ text: "Invented role", sources: [], priority: 1 }] },
     { roleId: "sn-asc", bullets: [] },
   ],
-  achievements: [{ title: "Eight-figure AI deal", text: "Led the POC.", sources: ["B-ach-1"] }],
+  achievements: [{ title: "Seven-figure AI deal", text: "Led the POC.", sources: ["B-ach-1"] }],
   skills: [{ group: "AI", items: "AI agents" }],
   certifications: "",
   emphasis: "Led with AI demos.",
@@ -485,5 +485,48 @@ await store.discardDraft(lone);
 const loneRec = await store.getResume(lone);
 ok("discard: empty record afterwards", () => assert.deepEqual(loneRec, { saved: [] }));
 delete process.env.BLOB_READ_WRITE_TOKEN;
+
+// ---- Language tuning ----
+const checksMod = await import("../lib/resume/checks");
+const promptMod = await import("../lib/resume/prompt");
+ok("style: banned words are flagged", () => {
+  for (const w of ["Spearheaded the launch", "Leveraged AI to win", "A robust, seamless rollout", "Used cutting-edge tools", "High-impact automation"]) {
+    assert.ok(checksMod.styleFlags(w).some((f) => f.kind === "style"), w);
+  }
+  assert.deepEqual(checksMod.styleFlags("Built a demo builder that generates synthetic data."), []);
+});
+ok("style: long bullets are flagged only when a cap is given", () => {
+  const long = Array.from({ length: 34 }, (_, i) => `word${i}`).join(" ");
+  assert.deepEqual(checksMod.styleFlags(long), []);
+  assert.equal(checksMod.styleFlags(long, { maxWords: 30 }).length, 1);
+});
+ok("style: checkLine reports style flags", () => {
+  const src = new Map([["B-x", { id: "B-x", text: "Built a thing" }]]);
+  const f = checksMod.checkLine({ text: "Spearheaded a thing", sources: ["B-x"] }, src as never, "");
+  assert.ok(f.some((x) => x.kind === "style"));
+});
+ok("prompt: voice rules, banned words and examples are in the system prompt", () => {
+  assert.ok(promptMod.BANNED_WORDS.length >= 10);
+  for (const w of promptMod.BANNED_WORDS) assert.ok(promptMod.RESUME_SYSTEM.toLowerCase().includes(w), w);
+  assert.ok(/keep .*bullet.* as written|as written/i.test(promptMod.RESUME_SYSTEM));
+  assert.ok(/20 words/.test(promptMod.RESUME_SYSTEM));
+  assert.ok(/same number|one place|only once/i.test(promptMod.RESUME_SYSTEM));
+  assert.ok(promptMod.VOICE_EXAMPLES.length >= 6);
+});
+ok("prompt: voice examples follow their own rules", () => {
+  for (const e of promptMod.VOICE_EXAMPLES) {
+    assert.deepEqual(checksMod.styleFlags(e.after, { maxWords: 30 }), [], e.after);
+    assert.deepEqual(checksMod.blockedTerms(e.after), [], e.after);
+    assert.ok(e.before.length > 0);
+  }
+});
+ok("base: wording follows the style rules", () => {
+  const all = [BASE.summary.text, ...BASE.roles.flatMap((r) => r.bullets.map((b) => b.text)), ...BASE.achievements.map((a) => a.text)];
+  for (const t of all) assert.deepEqual(checksMod.styleFlags(t), [], t);
+  const blob = JSON.stringify(BASE);
+  assert.ok(!/EKS|EC2|Stack-ranked/.test(blob));
+  assert.ok(/above 100%/.test(blob));
+  assert.ok(!/\bmy\b/.test(BASE.roles.flatMap((r) => r.bullets.map((b) => b.text)).join(" ")));
+});
 
 console.log("\nAll resume tests passed.");
