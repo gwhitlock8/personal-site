@@ -5,7 +5,7 @@ import { ChatOpenAI } from "@langchain/openai";
 // Moonshot's API is OpenAI-compatible, so LangChain's ChatOpenAI class works
 // as-is: point baseURL at Moonshot and pass the Kimi model id. Swapping to
 // another OpenAI-compatible host (OpenRouter, Together, a self-hosted vLLM
-// server running the open weights) is just a change of these env vars.
+// server) is just a change of these env vars.
 //
 // Kimi K3 specifics (platform.kimi.ai docs):
 //  - Thinking mode is always on. `reasoning_effort` is low | high | max

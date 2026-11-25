@@ -140,8 +140,8 @@ export default function Home() {
           <div>
             <h2 className="text-3xl font-semibold tracking-tight">How I built the assistant</h2>
             <p className="mt-3 max-w-[38rem] text-slate">
-              A Next.js app on Vercel. LangChain.js retrieves sections of my resume and notes, and Kimi K3, an open-weight
-              model from Moonshot AI, writes the answer. The walkthrough covers each step and the tradeoffs.
+              A Next.js app on Vercel. LangChain.js retrieves sections of my resume and notes, and Kimi K3, from Moonshot AI,
+              writes the answer. The walkthrough covers each step and the tradeoffs.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

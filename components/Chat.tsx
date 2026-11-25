@@ -150,7 +150,7 @@ export default function Chat() {
         </div>
         <div className="min-w-0">
           <p className="text-[15px] font-semibold leading-tight">Ask about Gavin</p>
-          <p className="text-[13px] text-slate">Runs on Kimi K3, an open-weight model, with LangChain.js</p>
+          <p className="text-[13px] text-slate">Runs on Kimi K3 with LangChain.js</p>
         </div>
       </div>
 

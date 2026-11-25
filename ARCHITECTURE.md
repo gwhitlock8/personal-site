@@ -1,6 +1,6 @@
 # Architecture
 
-This is a retrieval-augmented generation (RAG) assistant. When a visitor asks a question, the app finds the most relevant sections of my resume and notes, puts them in a prompt, and an open-weight model writes an answer from that context only.
+This is a retrieval-augmented generation (RAG) assistant. When a visitor asks a question, the app finds the most relevant sections of my resume and notes, puts them in a prompt, and Kimi K3 writes an answer from that context only.
 
 ```
 Browser (components/Chat.tsx)
@@ -43,7 +43,7 @@ The job fit check (`/api/fit`) follows the same path. It retrieves 8 sections in
 
 ## Decisions and tradeoffs
 
-**Open-weight model, hosted API.** Kimi K3's weights are public, but it's a 2.8T-parameter MoE that needs a GPU cluster. Moonshot's hosted API gives the same model without running GPUs. Because the API is OpenAI-compatible, moving to self-hosted vLLM, Bedrock or OpenRouter means changing `MOONSHOT_BASE_URL` and `KIMI_MODEL`, not code.
+**Hosted API.** Kimi K3 is a 2.8T-parameter MoE, too big to run on Vercel, so the app calls Moonshot's hosted API. Because the API is OpenAI-compatible, moving to another host (vLLM, Bedrock or OpenRouter) means changing `MOONSHOT_BASE_URL` and `KIMI_MODEL`, not code.
 
 **K3-specific settings.** Thinking is always on, and the default effort is `max`, which is too slow for chat, so we send `reasoning_effort: "low"`. Temperature, top_p and the penalty params are fixed by Moonshot and must be omitted. The test suite asserts both. Reasoning comes back in a separate `reasoning_content` field, and LangChain's `content` only holds the final answer, so hidden reasoning never reaches the visitor.
 
@@ -59,7 +59,7 @@ The job fit check (`/api/fit`) follows the same path. It retrieves 8 sections in
 
 ## Explaining it in an interview (2 minutes)
 
-1. **What it is.** "It's a RAG assistant over my resume and career notes, running on Kimi K3, an open-weight model, with LangChain.js on Vercel."
+1. **What it is.** "It's a RAG assistant over my resume and career notes, running on Kimi K3, with LangChain.js on Vercel."
 2. **Request path.** "The question goes to a Next.js route. A retriever pulls the five most relevant sections, a prompt template combines them with rules and the visitor's persona, and K3 streams the answer back. The chips under each reply show which sections it used, so you can check the grounding."
 3. **One interesting decision.** "Moonshot has no embeddings API, and my corpus is tiny, so I wrote a BM25 retriever behind LangChain's retriever interface. It's free, deterministic and swappable."
 4. **One thing I deliberately didn't do.** "No agent loop yet. K3's thinking mode requires round-tripping reasoning tokens on tool calls, which adapters handle poorly. A chain was faster and more reliable for v1."
@@ -71,4 +71,4 @@ The job fit check (`/api/fit`) follows the same path. It retrieves 8 sections in
 - Add an eval set: 20 real questions with expected facts, run with `npm run ask` in a loop.
 - Add LangSmith tracing (`LANGSMITH_TRACING=true` plus an API key) to see each retrieval and prompt.
 - Move to LangGraph with `save_contact` and `book_time` tools once reasoning round-tripping is handled.
-- Compare K3 against another open-weight model behind the same `kimi()` factory.
+- Compare K3 against another model behind the same `kimi()` factory.

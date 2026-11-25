@@ -17,9 +17,9 @@ export const profile = {
   name: "Gavin Whitlock",
   initials: "GW",
   location: "Austin, TX",
-  headline: "A technical storyteller who ties the technology back to business outcomes.",
+  headline: "Storyteller who ties the technology back to business outcomes",
   intro:
-    "I'm Gavin, an Austin-based solutions engineer with 10+ years in enterprise SaaS at DevRev, ServiceNow and LogicMonitor. I lead discovery and architecture workshops, then build POCs with AI agents and LLM integrations. I built the assistant on this page with LangChain.js and Kimi K3, an open-weight model.",
+    "I'm Gavin, an Austin-based solutions engineer with 10+ years in enterprise SaaS. I lead discovery and architecture workshops, then build POCs with AI agents and LLM integrations. I built the assistant on this page with LangChain.js and Kimi K3.",
   status: "Open to Solutions Engineering roles",
   links: {
     linkedin: "https://www.linkedin.com/in/gavin-whitlock",
@@ -30,7 +30,7 @@ export const profile = {
   },
   facts: [
     { value: "135%", label: "Quota attainment at ServiceNow, 2024" },
-    { value: "100%", label: "Net revenue retention as a LogicMonitor CSM, zero churn" },
+    { value: ">100%", label: "Net revenue retention as a LogicMonitor CSM, zero churn" },
     { value: "3", label: "ServiceNow Belayer Awards" },
     { value: "10+ yrs", label: "Enterprise SaaS, presales and customer success" },
   ],
@@ -43,10 +43,13 @@ export const experience: Role[] = [
     start: "May 2026",
     end: "Present",
     bullets: [
-      "Support strategic and enterprise accounts, positioning DevRev's AI platform for enterprise buyers.",
+      "Run technical discovery, demos and POCs for large enterprise accounts across TX and LA.",
+      "Built POC integrations with Microsoft Entra (wrote the OAuth flow for automatic SSO provisioning), Teams and Slack.",
+      "Built an AI workflow for a fractional CFO firm that turns discovery-call notes into reviewed proposals, cutting a typical two-week turnaround to two hours. They bought DevRev.",
+      "Built Dia, a command-line tool that stands up a demo-ready DevRev org from a plain-English brief.",
+      "Built an AI skill that creates dashboards using DevRev's internal API, working out the API with DevTools and Postman. Built and used MCPs, often from an OpenAPI spec.",
+      "Ran partner enablement cycles on the platform and how to sell it.",
       "Explain how the platform captures business context, provides an AI memory layer, prepares data for AI and runs an execution layer on top.",
-      "Lead technical discovery, product demos, POCs and technical workshops.",
-      "Help build out integrations for the DevRev platform.",
     ],
   },
   {
@@ -56,9 +59,9 @@ export const experience: Role[] = [
     start: "Jan 2026",
     end: "May 2026",
     bullets: [
-      "Designed AI workflow solutions with ServiceNow Now Assist and LLM integrations.",
-      "Built POC environments and prototypes demonstrating AI agents and workflow automation.",
-      "Led AI discovery workshops to help enterprise customers find high-impact automation opportunities.",
+      "Ran the POC for a large US credit card issuer, combining Moveworks and ServiceNow for employee self-service in Teams. It helped win a seven-figure deal and take the account to eight figures.",
+      "Built the Now Assist POC and a DEX integration that fixes device issues. ServiceNow later released it on the Store.",
+      "Ran AI discovery workshops with financial services and wealth management firms to find where automation would pay off.",
       "Supported strategic pursuits across wealth management and financial services.",
     ],
   },
@@ -69,10 +72,10 @@ export const experience: Role[] = [
     start: "Jul 2022",
     end: "Jan 2026",
     bullets: [
-      "Led technical sales cycles for enterprise financial services organizations from discovery through technical win.",
-      "Delivered demos and architecture workshops across ITOM, ITSM, SPM and Enterprise Architecture.",
-      "Built and presented cloud-native operations labs using AWS EKS and EC2.",
-      "Quota attainment: 112% (2025, managing the territory on my own for half the year), 135% (2024), 101% (2023), 87% (2022 ramp year).",
+      "Ran technical sales cycles for financial services accounts, from discovery to technical win, with demos and workshops across ITOM, ITSM, SPM and Enterprise Architecture.",
+      "Worked with a large bank's engineers to rewrite Terraform templates and API connections so they could deploy to GCP from ServiceNow.",
+      "Developed and ran a lab at ServiceNow's Knowledge conference demonstrating discovery and monitoring of Kubernetes objects.",
+      "Quota attainment: 135% (2024), 112% (2025, covering the territory alone for half the year), 101% (2023), 87% (2022 ramp year).",
     ],
   },
   {
@@ -82,8 +85,8 @@ export const experience: Role[] = [
     start: "Oct 2021",
     end: "Jul 2022",
     bullets: [
-      "Closed $150K+ in new business while ramping into the role.",
-      "Designed monitoring solutions spanning hybrid infrastructure and cloud environments.",
+      "Closed $150K+ in new business while ramping into the role. Named Rookie Sales Engineer.",
+      "Built DataSources that use scripts and protocols (SNMP, NetFlow, Syslog, OTel) to pull infrastructure metrics into a time-series database to trend and act on.",
     ],
   },
   {
@@ -93,9 +96,10 @@ export const experience: Role[] = [
     start: "Jun 2020",
     end: "Oct 2021",
     bullets: [
-      "Managed 17 enterprise accounts and secured 11 contract renewals.",
-      "Exceeded expansion and upsell quota; 100% net revenue retention with zero churn.",
-      "Ran executive business reviews and built custom operational dashboards.",
+      "Managed 17 of the company's largest accounts and secured 11 renewals.",
+      "Net revenue retention above 100% with zero churn. Grew spend at several accounts and exceeded expansion and upsell quota.",
+      "Wrote custom Groovy DataSources, run by the Collector installed in the customer's environment, to poll network devices for metrics.",
+      "Ran executive business reviews and built custom dashboards.",
     ],
   },
   {

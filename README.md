@@ -1,6 +1,6 @@
 # gavin-whitlock-site
 
-My personal site with an AI assistant that answers questions about my work. It's built with Next.js, LangChain.js and Kimi K3, an open-weight model from Moonshot AI, and deployed on Vercel.
+My personal site with an AI assistant that answers questions about my work. It's built with Next.js, LangChain.js and Kimi K3 from Moonshot AI, and deployed on Vercel.
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for how it works and why.
 
